@@ -18,7 +18,7 @@ export function generateSolutionPaths(
 
   // 1. Equation with assigned variable values: e.g. 3x + 7 = 22 with x = 5
   if (trimmed.includes('=') && variableValues) {
-    const rawLetters = trimmed.match(/[a-zA-Z]/g) || [];
+    const rawLetters: string[] = trimmed.match(/[a-zA-Z]/g) || [];
     const activeVars: Record<string, string> = {};
     for (const [k, v] of Object.entries(variableValues)) {
       if (rawLetters.includes(k) && v !== undefined && v !== null && v.trim() !== '') {
@@ -51,7 +51,7 @@ export function generateSolutionPaths(
   }
 
   // 2. Equation with brackets where RHS divides evenly: e.g. 2(x - 3) = 14
-  const bracketDivRegex = /^([+-]?\s*\d+)\s*\(([^()]+)\)\s*=\s*([+-]?\s*\d+)$/;
+  const bracketDivRegex = /^([+-]?\s*\d+)\s*\*?\s*\(([^()]+)\)\s*=\s*([+-]?\s*\d+)$/;
   const match = bracketDivRegex.exec(trimmed);
 
   if (match) {
@@ -84,7 +84,9 @@ export function generateSolutionPaths(
           divSteps.push({
             ...s,
             stepNumber: i + 2,
-            title: s.isFinal ? s.title : `Step ${i + 2}: ${s.title.replace(/^Step \d+:\s*/, '')}`,
+            title: s.title.startsWith('Step ')
+              ? `Step ${i + 2}: ${s.title.replace(/^Step \d+:\s*/, '')}`
+              : s.title,
           });
         }
       }

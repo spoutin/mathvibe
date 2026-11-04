@@ -24,33 +24,6 @@ export function solveGrade9Math(
     };
   }
 
-  // Check if variable substitution values are provided for variables that actually exist in the input
-  if (variableValues) {
-    const rawLetters = trimmed.match(/[a-zA-Z]/g) || [];
-    const activeValues: Record<string, string> = {};
-    for (const [k, v] of Object.entries(variableValues)) {
-      if (rawLetters.includes(k) && v !== undefined && v !== null && v.trim() !== '') {
-        activeValues[k] = v.trim();
-      }
-    }
-    if (Object.keys(activeValues).length > 0) {
-      const paths = generateSolutionPaths(rawInput, activeValues);
-      if (paths.length > 1) {
-        return {
-          success: true,
-          type: 'equation',
-          original: rawInput,
-          steps: paths[0].steps,
-          finalAnswer: paths[0].finalAnswer,
-          paths,
-          activePathId: paths[0].id,
-          strategyLabel: paths[0].strategyLabel,
-        };
-      }
-      return evaluateSubstitution(rawInput, activeValues);
-    }
-  }
-
   // Standardize symbols
   const sanitized = trimmed
     .replace(/[×·]/g, '*')
@@ -63,14 +36,28 @@ export function solveGrade9Math(
   }
 
   // Detect variable letter if single-letter variable used (e.g. y, n, a, etc.)
-  const letters = sanitized.match(/[a-zA-Z]/g) || [];
-  const distinctLetters = Array.from(new Set(letters));
+  const rawLetters = trimmed.match(/[a-zA-Z]/g) || [];
+  const distinctLetters = Array.from(new Set(rawLetters));
   let activeVar = 'x';
   let normalized = sanitized;
 
   if (distinctLetters.length === 1 && distinctLetters[0] !== 'x') {
     activeVar = distinctLetters[0];
     normalized = sanitized.replace(new RegExp(activeVar, 'g'), 'x');
+  }
+
+  // Normalize variable values map to match normalized x (only for variables that exist in rawInput)
+  const normVars: Record<string, string> = {};
+  if (variableValues) {
+    for (const [k, v] of Object.entries(variableValues)) {
+      if (rawLetters.includes(k) && v !== undefined && v !== null && v.trim() !== '') {
+        if (k === activeVar) {
+          normVars['x'] = v.trim();
+        } else {
+          normVars[k] = v.trim();
+        }
+      }
+    }
   }
 
   const replaceVarToken = (str: string): string => {
@@ -90,15 +77,29 @@ export function solveGrade9Math(
         title: replaceVarToken(s.title),
         rule: replaceVarToken(s.rule),
       }));
+
+      if (res.paths) {
+        res.paths = res.paths.map((p) => ({
+          ...p,
+          finalAnswer: replaceVarToken(p.finalAnswer),
+          steps: p.steps.map((s) => ({
+            ...s,
+            expression: replaceVarToken(s.expression),
+            action: replaceVarToken(s.action),
+            title: replaceVarToken(s.title),
+            rule: replaceVarToken(s.rule),
+          })),
+        }));
+      }
     }
     return res;
   };
 
-  // 1. Equations (has '=')
-  if (normalized.includes('=')) {
-    const paths = generateSolutionPaths(sanitized, variableValues);
+  // Check if variable substitution values are provided for variables that actually exist in the input
+  if (Object.keys(normVars).length > 0) {
+    const paths = generateSolutionPaths(normalized, normVars);
     if (paths.length > 1) {
-      return {
+      return finishResult({
         success: true,
         type: 'equation',
         original: rawInput,
@@ -107,7 +108,25 @@ export function solveGrade9Math(
         paths,
         activePathId: paths[0].id,
         strategyLabel: paths[0].strategyLabel,
-      };
+      });
+    }
+    return finishResult(evaluateSubstitution(normalized, normVars));
+  }
+
+  // 1. Equations (has '=')
+  if (normalized.includes('=')) {
+    const paths = generateSolutionPaths(normalized, normVars);
+    if (paths.length > 1) {
+      return finishResult({
+        success: true,
+        type: 'equation',
+        original: rawInput,
+        steps: paths[0].steps,
+        finalAnswer: paths[0].finalAnswer,
+        paths,
+        activePathId: paths[0].id,
+        strategyLabel: paths[0].strategyLabel,
+      });
     }
     return finishResult(solveLinearEquation(normalized));
   }
@@ -132,7 +151,6 @@ export function solveGrade9Math(
   }
 
   // 4. Higher-degree or Multi-variable Like Terms (without parentheses)
-  // Check this BEFORE GCF factoring so expressions like 3x^2 + 5x - x^2 + 2x combine to 2x^2 + 7x
   if (!normalized.includes('(')) {
     try {
       const poly = Polynomial.parse(normalized);

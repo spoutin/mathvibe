@@ -41,4 +41,22 @@ describe('Multi-Path Solving & Adaptive Strategy Integration', () => {
     const step1B = validateStepMultiPath('x = 10', 1, step0B.switchedPath!.steps, res.paths);
     expect(step1B.status).toBe('correct');
   });
+
+  it('supports non-x single variables in multi-path generation like 3y + 7 = 22 (y = 5) and 2(y - 3) = 14', () => {
+    const r1 = solveGrade9Math('3y + 7 = 22', { y: '5' });
+    expect(r1.paths).toBeDefined();
+    expect(r1.paths?.length).toBe(2);
+
+    const algPath = r1.paths?.find(p => p.id === 'algebra');
+    expect(algPath).toBeDefined();
+    expect(algPath?.steps[0].expression).toBe('3y = 15');
+    expect(algPath?.finalAnswer).toBe('y = 5');
+
+    const r2 = solveGrade9Math('2(y - 3) = 14');
+    expect(r2.paths).toBeDefined();
+    expect(r2.paths?.length).toBe(2);
+    const divPath = r2.paths?.find(p => p.id === 'division');
+    expect(divPath?.steps[0].expression).toBe('y - 3 = 7');
+    expect(divPath?.steps[1].title).toMatch(/Step 2:/);
+  });
 });

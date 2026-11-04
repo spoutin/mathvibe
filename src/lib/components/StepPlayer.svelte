@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SolveResult } from '../types.ts';
+  import type { SolveResult, MathStep } from '../types.ts';
   import StepCard from './StepCard.svelte';
   import { validateStepMultiPath } from '../math/validator.ts';
   import { fireCelebrationConfetti } from '../confetti.ts';
@@ -76,7 +76,11 @@
       activeSteps = validation.switchedPath.steps;
       activeStrategyLabel = validation.switchedPath.strategyLabel;
       stepStatuses = new Array(activeSteps.length).fill('pending');
-      stepStatuses[0] = 'solved';
+      const targetIdx = validation.matchedStepIndex ?? 0;
+      for (let j = 0; j < targetIdx; j++) {
+        stepStatuses[j] = 'skipped';
+      }
+      stepStatuses[targetIdx] = 'solved';
       feedbackMessage = {
         type: 'success',
         text: validation.message,
@@ -84,7 +88,7 @@
       studentInput = '';
       onInputUpdate?.('');
       showHint = false;
-      currentStepIndex = 1;
+      currentStepIndex = targetIdx + 1;
 
       if (currentStepIndex >= activeSteps.length) {
         fireCelebrationConfetti();
