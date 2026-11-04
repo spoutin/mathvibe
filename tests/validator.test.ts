@@ -81,4 +81,12 @@ describe('Mathematical Step Equivalence & Validator', () => {
     const res = validateStep('8 + x', 0, steps);
     expect(res.status).toBe('correct');
   });
+
+  it('validates unreduced and reduced fraction equivalence (x = 2/4 vs x = 1/2)', () => {
+    const steps: MathStep[] = [
+      { stepNumber: 1, title: 'Step 1', expression: 'x = 1/2', action: '', rule: '' },
+    ];
+    expect(validateStep('x = 2/4', 0, steps).status).toBe('correct');
+    expect(validateStep('2/4 = x', 0, steps).status).toBe('correct');
+  });
 });

@@ -71,6 +71,10 @@
         <span class="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1">
           <span>👁️</span> Revealed
         </span>
+      {:else if status === 'skipped'}
+        <span class="text-xs font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+          <span>⚡</span> Skipped
+        </span>
       {:else if isWaitingForInput}
         <span class="text-xs font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
           <span>✍️</span> Your Turn

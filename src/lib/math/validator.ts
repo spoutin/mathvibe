@@ -1,4 +1,5 @@
 import { parseTerms, formatTerms } from './simplify.ts';
+import { Fraction } from './fraction.ts';
 import type { MathStep } from '../types.ts';
 
 export interface ValidationResult {
@@ -117,11 +118,15 @@ function isSideEquivalent(sideA: string, sideB: string): boolean {
   }
 }
 
-function canonicalizePolynomial(terms: { coeff: any; variable: string }[]): string {
-  let totalX = terms.filter((t) => t.variable === 'x').reduce((acc, t) => acc.add(t.coeff), terms[0].coeff.mul(new (terms[0].coeff.constructor as any)(0, 1)));
-  let totalConst = terms.filter((t) => t.variable === '').reduce((acc, t) => acc.add(t.coeff), terms[0].coeff.mul(new (terms[0].coeff.constructor as any)(0, 1)));
+function canonicalizePolynomial(terms: { coeff: Fraction; variable: string }[]): string {
+  let totalX = terms
+    .filter((t) => t.variable === 'x')
+    .reduce((acc, t) => acc.add(t.coeff), new Fraction(0, 1));
+  let totalConst = terms
+    .filter((t) => t.variable === '')
+    .reduce((acc, t) => acc.add(t.coeff), new Fraction(0, 1));
 
-  const canonTerms: { coeff: any; variable: string }[] = [];
+  const canonTerms: { coeff: Fraction; variable: string }[] = [];
   if (totalX.numerator !== 0) canonTerms.push({ coeff: totalX, variable: 'x' });
   if (totalConst.numerator !== 0 || canonTerms.length === 0) {
     canonTerms.push({ coeff: totalConst, variable: '' });
