@@ -173,10 +173,10 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
 
   // General polynomial expression comparison (only if neither expression has numerical parentheses like 2(4)^2)
   if (!cleanA.includes('=') && !cleanB.includes('=')) {
-    const hasParenA = cleanA.includes('(');
-    const hasParenB = cleanB.includes('(');
+    const hasNumParenA = /\(\s*-?\d/.test(cleanA);
+    const hasNumParenB = /\(\s*-?\d/.test(cleanB);
 
-    if (!hasParenA && !hasParenB) {
+    if (!hasNumParenA && !hasNumParenB) {
       try {
         const polyA = Polynomial.parse(cleanA).combineLikeTerms().format();
         const polyB = Polynomial.parse(cleanB).combineLikeTerms().format();
