@@ -64,6 +64,14 @@ describe('Variable Substitution End-to-End Integration', () => {
     expect(evalInput.status).toBe('correct');
   });
 
+  it('does not falsely reject valid step 5(9) - -3 as mathematically valid', () => {
+    const res = solveGrade9Math('5x^2 - x', { x: '-3' });
+    // Expected next step from 5(-3)^2 - (-3) is 5 * 9 - -3.
+    // The student types 5(9) - -3.
+    const evalInput = validateStep('5(9) - -3', 1, res.steps);
+    expect(evalInput.status).toBe('correct');
+  });
+
   it('evaluates expression down to a single final numerical step without leaving an intermediate final form', () => {
     const res = solveGrade9Math('5x^2 - x', { x: '-3' });
     expect(res.success).toBe(true);
