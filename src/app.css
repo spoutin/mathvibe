@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-3d {
+    @apply transition-all active:translate-y-1 active:shadow-none select-none;
+  }
+}
