@@ -34,4 +34,14 @@ describe('Unified Grade 9 Math Engine', () => {
     expect(res.success).toBe(false);
     expect(res.error).toBeDefined();
   });
+
+  it('normalizes single-letter variables like y, n, a to x', () => {
+    const r1 = solveGrade9Math('2y + 3 = 11');
+    expect(r1.success).toBe(true);
+    expect(r1.finalAnswer).toBe('y = 4');
+
+    const r2 = solveGrade9Math('3n + 5n');
+    expect(r2.success).toBe(true);
+    expect(r2.finalAnswer).toBe('8n');
+  });
 });

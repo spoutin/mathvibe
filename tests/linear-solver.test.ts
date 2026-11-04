@@ -52,4 +52,18 @@ describe('Linear Equation Solver', () => {
     expect(result.success).toBe(true);
     expect(result.finalAnswer.toLowerCase()).toContain('infinitely many solutions');
   });
+
+  it('solves equations with grouped numerators over denominators like (x + 3)/2 = 5', () => {
+    const result = solveLinearEquation('(x + 3)/2 = 5');
+    expect(result.success).toBe(true);
+    expect(result.finalAnswer).toBe('x = 7');
+  });
+
+  it('formats integer addition actions cleanly without /1 in step text', () => {
+    const result = solveLinearEquation('3x - 4 = 11');
+    expect(result.success).toBe(true);
+    expect(result.finalAnswer).toBe('x = 5');
+    expect(result.steps.some(s => s.action.includes('Added 4 to both sides'))).toBe(true);
+    expect(result.steps.some(s => s.action.includes('4/1'))).toBe(false);
+  });
 });

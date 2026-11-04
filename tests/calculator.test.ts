@@ -27,4 +27,14 @@ describe('BEDMAS Calculator Engine', () => {
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/division by zero/i);
   });
+
+  it('handles implicit multiplication and unary negation before brackets', () => {
+    const r1 = solveArithmetic('2(3 + 4)');
+    expect(r1.success).toBe(true);
+    expect(r1.finalAnswer).toBe('14');
+
+    const r2 = solveArithmetic('-(3 + 4)');
+    expect(r2.success).toBe(true);
+    expect(r2.finalAnswer).toBe('-7');
+  });
 });

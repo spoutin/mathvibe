@@ -169,10 +169,12 @@
     <!-- Active Step Player -->
     {#if result && result.success}
       <section class="space-y-4">
-        <StepPlayer
-          {result}
-          onReset={handleReset}
-        />
+        {#key result}
+          <StepPlayer
+            {result}
+            onReset={handleReset}
+          />
+        {/key}
       </section>
     {:else if !result}
       <!-- Empty Welcome / Intro State -->

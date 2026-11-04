@@ -140,7 +140,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
       const actionText =
         moveConst.numerator > 0
           ? `Subtracted ${moveConst.toString()} from both sides`
-          : `Added ${Math.abs(moveConst.numerator)}/${moveConst.denominator} to both sides`;
+          : `Added ${new Fraction(Math.abs(moveConst.numerator), moveConst.denominator).toString()} to both sides`;
 
       steps.push({
         stepNumber: stepCount,
@@ -328,9 +328,19 @@ function formatVariableTerm(coeff: Fraction): string {
   return `${coeff.toString()}x`;
 }
 
+function cleanExpression(str: string): string {
+  return str
+    .replace(/\s+/g, ' ')
+    .replace(/\+\s*\+/g, '+')
+    .replace(/\+\s*-/g, '-')
+    .replace(/-\s*\+/g, '-')
+    .replace(/-\s*-/g, '+')
+    .trim();
+}
+
 /**
  * Finds the LCD of all denominators appearing in LHS and RHS
- * Handles terms like "x/2", "x/3", "5/4", etc.
+ * Handles terms like "x/2", "x/3", "5/4", "(x + 3)/2", etc.
  */
 function findEquationLcd(lhs: string, rhs: string): number {
   const full = `${lhs} + ${rhs}`;
@@ -358,20 +368,48 @@ function findEquationLcd(lhs: string, rhs: string): number {
 /**
  * Multiplies each term in a side string by the LCD
  * e.g. "x/2 + x/3" * 6 -> "3x + 2x"
+ * e.g. "(x + 3)/2" * 2 -> "x + 3"
  * e.g. "5" * 6 -> "30"
  */
 function clearFractionsInSide(expr: string, lcd: number): string {
-  // If expression has parentheses, expand first or multiply
-  const cleaned = expr.replace(/\s+/g, ' ');
-  // Split terms by + or -
-  const terms = parseFractionTerms(cleaned);
-  const multipliedTerms = terms.map((t) => {
-    // Multiply term coefficient by lcd
-    return {
-      coeff: t.coeff.mul(new Fraction(lcd, 1)),
-      variable: t.variable,
-    };
-  });
+  // If grouped numerator over denominator: e.g. (x + 3)/2
+  if (/\([^()]+\)\s*\/\s*\d+/.test(expr)) {
+    // Regex matches grouped fraction terms or regular terms
+    const termRegex = /([+-]?\s*(?:\([^()]+\)\s*\/\s*\d+|[^+-]+))/g;
+    let match: RegExpExecArray | null;
+    const pieces: string[] = [];
+    while ((match = termRegex.exec(expr)) !== null) {
+      const rawPiece = match[1].trim();
+      if (!rawPiece) continue;
+      const groupedMatch = /^([+-]?)\s*\(([^()]+)\)\s*\/\s*(\d+)$/.exec(rawPiece);
+      if (groupedMatch) {
+        const sign = groupedMatch[1] === '-' ? '-' : '';
+        const inner = groupedMatch[2].trim();
+        const den = parseInt(groupedMatch[3], 10);
+        const factor = lcd / den;
+        const prefix = sign === '-' ? '-' : '';
+        if (factor === 1) {
+          pieces.push(prefix ? `${prefix}(${inner})` : `(${inner})`);
+        } else {
+          pieces.push(prefix ? `${prefix}${factor}(${inner})` : `${factor}(${inner})`);
+        }
+      } else {
+        const terms = parseFractionTerms(rawPiece);
+        const multiplied = terms.map((t) => ({
+          coeff: t.coeff.mul(new Fraction(lcd, 1)),
+          variable: t.variable,
+        }));
+        pieces.push(formatTerms(multiplied));
+      }
+    }
+    return cleanExpression(pieces.join(' + '));
+  }
+
+  const terms = parseFractionTerms(expr);
+  const multipliedTerms = terms.map((t) => ({
+    coeff: t.coeff.mul(new Fraction(lcd, 1)),
+    variable: t.variable,
+  }));
 
   return formatTerms(multipliedTerms);
 }

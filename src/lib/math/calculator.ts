@@ -248,6 +248,12 @@ function tokenize(input: string): Token[] {
     const ch = str[i];
 
     if (ch === '(' || ch === ')') {
+      if (ch === '(') {
+        const prev = tokens[tokens.length - 1];
+        if (prev && (prev.type === 'num' || (prev.type === 'paren' && prev.paren === ')'))) {
+          tokens.push({ type: 'op', op: '*' });
+        }
+      }
       tokens.push({ type: 'paren', paren: ch });
       i++;
       continue;
@@ -271,8 +277,16 @@ function tokenize(input: string): Token[] {
       const prev = tokens[tokens.length - 1];
       const isUnary = !prev || prev.type === 'op' || (prev.type === 'paren' && prev.paren === '(');
       if (isUnary) {
-        // Read the number following unary minus
         i++;
+        // Check if immediately followed by '('
+        while (i < str.length && str[i] === ' ') i++;
+        if (i < str.length && str[i] === '(') {
+          tokens.push({ type: 'num', val: new Fraction(-1, 1) });
+          tokens.push({ type: 'op', op: '*' });
+          continue;
+        }
+
+        // Read the number following unary minus
         let numStr = '-';
         while (i < str.length && (/\d/.test(str[i]) || str[i] === '.')) {
           numStr += str[i];
