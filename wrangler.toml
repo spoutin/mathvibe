@@ -1,6 +1,5 @@
 name = "mathvibe"
-pages_build_output_dir = "dist"
 compatibility_date = "2024-01-01"
 
-[env.production]
-# Production specific settings if needed
+[assets]
+directory = "./dist"
