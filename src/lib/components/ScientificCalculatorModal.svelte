@@ -123,7 +123,7 @@
 
   <!-- Modal Content Container -->
   <div
-    class="bg-white border-2 border-slate-300 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto relative z-10"
+    class="bg-white border-2 border-slate-300 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto relative z-10 outline-none focus:outline-none ring-0"
     role="dialog"
     aria-modal="true"
     aria-label="Scientific Calculator"
@@ -162,13 +162,9 @@
     </div>
 
     <!-- Screen Display Area -->
-    <div class="p-4 bg-slate-900 text-white font-mono flex flex-col justify-end min-h-[96px] text-right border-b border-slate-800 shadow-inner">
-      <div class="text-xs text-slate-400 overflow-x-auto whitespace-nowrap min-h-[1.25rem]">
-        {expression || ' '}
-      </div>
-      <div class="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight overflow-x-auto whitespace-nowrap">
-        {resultDisplay}
-      </div>
+    <div class="p-4 bg-slate-900 text-white font-mono flex flex-col justify-end min-h-[96px] text-right border-b border-slate-800 shadow-inner select-none outline-none">
+      <div class="text-xs text-slate-400 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap min-h-[1.25rem]">{expression}</div>
+      <div class="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap">{resultDisplay}</div>
     </div>
 
     <!-- Keypad Matrix -->

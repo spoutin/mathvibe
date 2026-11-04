@@ -93,8 +93,19 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-sm">
-          <span>✍️</span> Student-Solved Mode
+        <button
+          type="button"
+          onclick={() => (showScientificModal = true)}
+          class="btn-3d px-3.5 py-2 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-500 hover:to-purple-600 text-white font-black text-xs sm:text-sm rounded-xl border-b-2 border-indigo-950 shadow-md flex items-center gap-1.5 cursor-pointer active:translate-y-0.5"
+          aria-label="Open Scientific Calculator"
+          title="Open Scientific Calculator"
+        >
+          <span class="text-base leading-none">🧮</span>
+          <span>Scientific Calc</span>
+        </button>
+
+        <span class="hidden md:inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-sm">
+          <span>✍️</span> Student Mode
         </span>
       </div>
     </div>
@@ -246,18 +257,6 @@
       <span class="text-slate-400">High School Grade 9 Pedagogical Standards</span>
     </div>
   </footer>
-
-  <!-- Floating Scientific Calculator Launch Button (FAB) -->
-  <button
-    type="button"
-    onclick={() => (showScientificModal = true)}
-    class="fixed bottom-6 right-6 z-40 btn-3d px-4 py-3 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-500 hover:to-purple-600 text-white font-black text-xs sm:text-sm rounded-2xl border-b-4 border-indigo-950 shadow-2xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105 active:scale-95"
-    aria-label="Open Scientific Calculator"
-    title="Open Scientific Calculator"
-  >
-    <span class="text-xl">🧮</span>
-    <span>Scientific Calc</span>
-  </button>
 
   <!-- Scientific Calculator Modal -->
   {#if showScientificModal}
