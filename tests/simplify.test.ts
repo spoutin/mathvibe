@@ -25,4 +25,10 @@ describe('Expression Simplifier', () => {
     expect(result.finalAnswer).toBe('x + 15');
     expect(result.steps.length).toBeGreaterThanOrEqual(2);
   });
+
+  it('simplifies polynomials with higher degrees and sign distributions like (3t^2+5t-1) - (5 -4t) + (1-2t^2)', () => {
+    const result = simplifyExpression('(3t^2+5t-1) - (5 -4t) + (1-2t^2)');
+    expect(result.success).toBe(true);
+    expect(result.finalAnswer).toBe('t^2 + 9t - 5');
+  });
 });

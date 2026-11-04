@@ -1,4 +1,5 @@
 import { Fraction } from './fraction.ts';
+import { Polynomial, Monomial } from './polynomial.ts';
 import type { MathStep, SolveResult } from '../types.ts';
 
 interface Term {
@@ -25,7 +26,7 @@ export function simplifyExpression(rawInput: string): SolveResult {
 
   try {
     // 1. Expand Parentheses using Distributive Property
-    // Matches e.g. "3(2x - 4)", "-2(x + 5)", "+(3x - 1)", "(x + 4)"
+    // Matches e.g. "3(2x - 4)", "-2(x + 5)", "+(3x - 1)", "(x + 4)", "-(5 - 4t)"
     const parenRegex = /([+-]?\s*\d*(?:\/\d+)?)\s*\(\s*([^()]+)\s*\)/;
 
     while (parenRegex.test(currentExpr)) {
@@ -44,19 +45,16 @@ export function simplifyExpression(rawInput: string): SolveResult {
         multiplier = Fraction.parse(rawMultiplier);
       }
 
-      // Parse terms inside parentheses
-      const innerTerms = parseTerms(innerContent);
-      const expandedTerms: Term[] = innerTerms.map((t) => ({
-        coeff: t.coeff.mul(multiplier),
-        variable: t.variable,
-      }));
+      // Parse inner content using Polynomial to handle any powers and variables
+      const innerPoly = Polynomial.parse(innerContent);
+      const expandedTerms = innerPoly.terms.map((t) => new Monomial(t.coeff.mul(multiplier), t.vars));
+      const expandedPoly = new Polynomial(expandedTerms);
+      const expandedStr = expandedPoly.format();
 
-      const expandedStr = formatTerms(expandedTerms);
-      // Replace in currentExpr carefully
+      // Replace in currentExpr
       const startIndex = match.index;
       const matchLen = match[0].length;
 
-      // Handle sign formatting when replacing
       let prefix = currentExpr.substring(0, startIndex).trimEnd();
       let suffix = currentExpr.substring(startIndex + matchLen).trimStart();
 
@@ -77,50 +75,22 @@ export function simplifyExpression(rawInput: string): SolveResult {
       });
     }
 
-    // 2. Parse all terms and combine like terms
-    const allTerms = parseTerms(currentExpr);
+    // 2. Parse all terms and combine like terms across any powers and variables
+    const poly = Polynomial.parse(currentExpr);
+    const combined = poly.combineLikeTerms();
 
-    const xTerms = allTerms.filter((t) => t.variable === 'x');
-    const constTerms = allTerms.filter((t) => t.variable === '');
-
-    const needsCombining = xTerms.length > 1 || constTerms.length > 1;
-
-    let totalX = new Fraction(0, 1);
-    for (const t of xTerms) {
-      totalX = totalX.add(t.coeff);
-    }
-
-    let totalConst = new Fraction(0, 1);
-    for (const t of constTerms) {
-      totalConst = totalConst.add(t.coeff);
-    }
-
-    if (needsCombining) {
+    if (poly.terms.length > combined.terms.length) {
       stepCount++;
-      const groupedXStr = xTerms.map((t) => t.coeff.toString() + 'x').join(' + ');
-      const groupedCStr = constTerms.map((t) => t.coeff.toString()).join(' + ');
-      const groupingNote = [
-        xTerms.length > 1 ? `Variable terms: (${groupedXStr}) = ${formatVariableTerm(totalX, 'x')}` : '',
-        constTerms.length > 1 ? `Constant terms: (${groupedCStr}) = ${totalConst.toString()}` : '',
-      ]
-        .filter(Boolean)
-        .join('; ');
-
-      const combinedTerms: Term[] = [];
-      if (totalX.numerator !== 0) combinedTerms.push({ coeff: totalX, variable: 'x' });
-      if (totalConst.numerator !== 0 || combinedTerms.length === 0) {
-        combinedTerms.push({ coeff: totalConst, variable: '' });
-      }
-
-      currentExpr = formatTerms(combinedTerms);
-
+      currentExpr = combined.format();
       steps.push({
         stepNumber: stepCount,
         title: `Step ${stepCount}: Combine Like Terms`,
         expression: currentExpr,
-        action: groupingNote,
+        action: `Grouped and combined like terms across powers and variables: ${currentExpr}`,
         rule: 'Combining Like Terms: Collect terms that share the exact same variable letters and powers.',
       });
+    } else {
+      currentExpr = combined.format();
     }
 
     const finalAnswer = currentExpr;
@@ -155,15 +125,13 @@ export function simplifyExpression(rawInput: string): SolveResult {
 
 /**
  * Splits an expression without parentheses into a list of linear Terms
- * e.g. "4x + 7 + 2x - 3" -> [{4, 'x'}, {7, ''}, {2, 'x'}, {-3, ''}]
+ * (Preserved for compatibility)
  */
 export function parseTerms(expr: string): Term[] {
   const terms: Term[] = [];
   const cleaned = cleanExpression(expr);
   if (!cleaned) return terms;
 
-  // Split by + or - keeping sign with the term
-  // Match each signed term e.g. "+ 4x", "- 7", "2x"
   const regex = /([+-]?\s*[^+-]+)/g;
   let match: RegExpExecArray | null;
 
@@ -172,8 +140,7 @@ export function parseTerms(expr: string): Term[] {
     if (!rawTerm) continue;
 
     if (rawTerm.includes('x')) {
-      // Variable term
-      const coeffPart = rawTerm.replace('x', '');
+      let coeffPart = rawTerm.replace('x', '');
       let coeff: Fraction;
       if (coeffPart === '' || coeffPart === '+') {
         coeff = new Fraction(1, 1);
@@ -184,7 +151,6 @@ export function parseTerms(expr: string): Term[] {
       }
       terms.push({ coeff, variable: 'x' });
     } else {
-      // Constant term
       terms.push({ coeff: Fraction.parse(rawTerm), variable: '' });
     }
   }
@@ -222,13 +188,6 @@ export function formatTerms(terms: Term[]): string {
   }
 
   return result || '0';
-}
-
-function formatVariableTerm(coeff: Fraction, variable: string): string {
-  if (coeff.numerator === 0) return '0';
-  if (coeff.toString() === '1') return variable;
-  if (coeff.toString() === '-1') return `-${variable}`;
-  return `${coeff.toString()}${variable}`;
 }
 
 function cleanExpression(str: string): string {
