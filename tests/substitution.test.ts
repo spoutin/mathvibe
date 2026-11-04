@@ -41,4 +41,22 @@ describe('Variable Substitution & Evaluation Engine', () => {
     expect(res.finalAnswer).toBe('22 = 22');
     expect(res.steps.some(s => s.action.toLowerCase().includes('balanced') || s.action.toLowerCase().includes('verified'))).toBe(true);
   });
+
+  it('evaluates powers before products in partial substitution 2x^2 + 3y with x = 4 to get 3y + 32', () => {
+    const res = evaluateSubstitution('2x^2 + 3y', { x: '4' });
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('3y + 32');
+  });
+
+  it('substitutes adjacent variables like xy and 2xy correctly (x=3, y=4 -> 24)', () => {
+    const res = evaluateSubstitution('2xy', { x: '3', y: '4' });
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('24');
+  });
+
+  it('simplifies partial substitution on terms with coefficient 1 or -1 like x + 2y with x = 4', () => {
+    const res = evaluateSubstitution('x + 2y', { x: '4' });
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('2y + 4');
+  });
 });

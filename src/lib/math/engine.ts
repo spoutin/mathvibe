@@ -23,13 +23,17 @@ export function solveGrade9Math(
     };
   }
 
-  // Check if variable substitution values are provided
+  // Check if variable substitution values are provided for variables that actually exist in the input
   if (variableValues) {
-    const hasActiveValues = Object.values(variableValues).some(
-      (v) => v !== undefined && v !== null && v.trim() !== ''
-    );
-    if (hasActiveValues) {
-      return evaluateSubstitution(rawInput, variableValues);
+    const rawLetters = trimmed.match(/[a-zA-Z]/g) || [];
+    const activeValues: Record<string, string> = {};
+    for (const [k, v] of Object.entries(variableValues)) {
+      if (rawLetters.includes(k) && v !== undefined && v !== null && v.trim() !== '') {
+        activeValues[k] = v.trim();
+      }
+    }
+    if (Object.keys(activeValues).length > 0) {
+      return evaluateSubstitution(rawInput, activeValues);
     }
   }
 

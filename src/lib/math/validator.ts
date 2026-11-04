@@ -62,8 +62,10 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
   const cleanA = sanitizeInput(inputA);
   const cleanB = sanitizeInput(inputB);
 
-  // Direct normalized string match
-  if (cleanA.replace(/\s+/g, '') === cleanB.replace(/\s+/g, '')) {
+  // Direct normalized string match (normalizing optional * before parentheses e.g. 2*(4) vs 2(4))
+  const normA = cleanA.replace(/\s+/g, '').replace(/\*\(/g, '(');
+  const normB = cleanB.replace(/\s+/g, '').replace(/\*\(/g, '(');
+  if (normA === normB) {
     return true;
   }
 
@@ -132,18 +134,23 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
     }
   }
 
-  // General polynomial expression comparison
+  // General polynomial expression comparison (only if neither expression has numerical parentheses like 2(4)^2)
   if (!cleanA.includes('=') && !cleanB.includes('=')) {
-    try {
-      const polyA = Polynomial.parse(cleanA).combineLikeTerms().format();
-      const polyB = Polynomial.parse(cleanB).combineLikeTerms().format();
-      if (polyA === polyB) {
+    const hasParenA = cleanA.includes('(');
+    const hasParenB = cleanB.includes('(');
+
+    if (!hasParenA && !hasParenB) {
+      try {
+        const polyA = Polynomial.parse(cleanA).combineLikeTerms().format();
+        const polyB = Polynomial.parse(cleanB).combineLikeTerms().format();
+        if (polyA === polyB) {
+          return true;
+        }
+      } catch {}
+
+      if (isSideEquivalent(cleanA, cleanB)) {
         return true;
       }
-    } catch {}
-
-    if (isSideEquivalent(cleanA, cleanB)) {
-      return true;
     }
   }
 

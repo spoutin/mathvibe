@@ -34,4 +34,25 @@ describe('Variable Substitution End-to-End Integration', () => {
     expect(evalPresets.length).toBeGreaterThan(0);
     expect(evalPresets[0].variables).toBeDefined();
   });
+
+  it('rejects incorrect student substitution inputs that drop powers or use wrong numbers in practice mode', () => {
+    const res = solveGrade9Math('2x^2 - 3y + 5', { x: '4', y: '-2' });
+    // Correct is 2(4)^2 - 3(-2) + 5
+
+    // Wrong: student forgot the ^2 power
+    const wrongPower = validateStep('2(4) - 3(-2) + 5', 0, res.steps);
+    expect(wrongPower.status).toBe('incorrect');
+
+    // Wrong: student entered completely random numbers
+    const wrongNumbers = validateStep('2(99)^2 - 3(88) + 5', 0, res.steps);
+    expect(wrongNumbers.status).toBe('incorrect');
+  });
+
+  it('ignores stale variables in solveGrade9Math when formula does not contain that variable', () => {
+    // Formula only contains y, but stale variableValues contains x=5
+    const res = solveGrade9Math('2y + 3 = 11', { x: '5' });
+    expect(res.success).toBe(true);
+    expect(res.type).toBe('equation');
+    expect(res.finalAnswer).toBe('y = 4');
+  });
 });

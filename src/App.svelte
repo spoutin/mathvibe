@@ -20,6 +20,23 @@
     return Array.from(new Set(letters)).sort();
   });
 
+  // Prune variable values if formula changes and no longer has those variables
+  $effect(() => {
+    const vars = detectedVariables;
+    const pruned: Record<string, string> = {};
+    let shouldPrune = false;
+    for (const [k, v] of Object.entries(variableValues)) {
+      if (vars.includes(k)) {
+        pruned[k] = v;
+      } else {
+        shouldPrune = true;
+      }
+    }
+    if (shouldPrune) {
+      variableValues = pruned;
+    }
+  });
+
   function executeSolve() {
     if (!formula.trim()) return;
     activeStepInput = '';

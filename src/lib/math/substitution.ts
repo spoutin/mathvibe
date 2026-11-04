@@ -9,10 +9,11 @@ export function evaluateSubstitution(
   const steps: MathStep[] = [];
   const trimmed = rawInput.trim();
 
-  // Clean and filter active variable assignments
+  // Clean and filter active variable assignments that actually exist in the input
+  const rawLetters = trimmed.match(/[a-zA-Z]/g) || [];
   const activeVars: Record<string, string> = {};
   for (const [k, v] of Object.entries(variableValues)) {
-    if (v !== undefined && v !== null && v.toString().trim() !== '') {
+    if (rawLetters.includes(k) && v !== undefined && v !== null && v.toString().trim() !== '') {
       activeVars[k] = v.toString().trim();
     }
   }
@@ -58,7 +59,7 @@ export function evaluateSubstitution(
       // Fully numerical evaluation
       const arithRes = solveArithmetic(substituted);
       if (arithRes.success) {
-        // Append arithmetic steps
+        // Append arithmetic steps (skipping initial echo if identical to substituted)
         for (const s of arithRes.steps) {
           stepCount++;
           steps.push({
@@ -79,7 +80,6 @@ export function evaluateSubstitution(
     }
 
     // Partial assignment: some variables remain
-    // Evaluate constant monomial multiplications e.g. 3(4) -> 12
     const simplifiedExpr = simplifySubstitutedExpression(substituted);
     stepCount++;
     steps.push({
@@ -170,6 +170,19 @@ function evaluateEquationSubstitution(
     const rhsEval = solveArithmetic(rhsSub);
 
     if (lhsEval.success && rhsEval.success) {
+      // Append intermediate steps from LHS evaluation
+      for (const s of lhsEval.steps) {
+        if (!s.isFinal) {
+          stepCount++;
+          steps.push({
+            ...s,
+            stepNumber: stepCount,
+            expression: `${s.expression} = ${rhsEval.finalAnswer}`,
+            title: `Step ${stepCount}: ${s.title.replace(/^Step \d+:\s*/, '')}`,
+          });
+        }
+      }
+
       stepCount++;
       const isBalanced = lhsEval.finalAnswer === rhsEval.finalAnswer;
       const verifyLine = `${lhsEval.finalAnswer} = ${rhsEval.finalAnswer}`;
@@ -208,19 +221,32 @@ function evaluateEquationSubstitution(
 
 function performStringSubstitution(expr: string, vars: Record<string, string>): string {
   let res = expr;
-  for (const [varName, val] of Object.entries(vars)) {
-    // Replace variable occurrences as standalone variable tokens
-    const regex = new RegExp(`(?<![a-zA-Z])${varName}(?![a-zA-Z])`, 'g');
+  // Sort variable keys by length descending to avoid partial prefix collisions
+  const sortedKeys = Object.keys(vars).sort((a, b) => b.length - a.length);
+
+  for (const varName of sortedKeys) {
+    const val = vars[varName];
+    // Replace variable occurrences
+    const regex = new RegExp(varName, 'g');
     res = res.replace(regex, `(${val})`);
   }
   return res;
 }
 
 function simplifySubstitutedExpression(expr: string): string {
-  // Evaluates numerical parts like 3(4) -> 12
   let simplified = expr;
-  // Match constant(constant) e.g. 3(4) or -2(5)
-  const productRegex = /([+-]?\s*\d+(?:\/\d+)?)\s*\(\s*(-?\d+(?:\/\d+)?)\s*\)/g;
+
+  // 1. Evaluate powers first: e.g. (4)^2 -> 16
+  const powerRegex = /\(\s*(-?\d+(?:\/\d+)?)\s*\)\s*\^\s*(-?\d+)/g;
+  simplified = simplified.replace(powerRegex, (_, base, exp) => {
+    const b = parseFloat(base);
+    const p = parseInt(exp, 10);
+    const res = Math.pow(b, p);
+    return `(${res})`;
+  });
+
+  // 2. Evaluate coefficient * (constant) e.g. 2(16) -> 32
+  const productRegex = /([+-]?\s*\d+(?:\/\d+)?)\s*\(\s*(-?\d+(?:\/\d+)?)\s*\)(?!\s*\^)/g;
   simplified = simplified.replace(productRegex, (_, c1, c2) => {
     const arith = solveArithmetic(`${c1} * ${c2}`);
     if (arith.success) {
@@ -228,6 +254,18 @@ function simplifySubstitutedExpression(expr: string): string {
       return ans.startsWith('-') ? ans : `+ ${ans}`;
     }
     return `${c1} * ${c2}`;
+  });
+
+  // 3. Unwrap isolated parenthesized numbers without multipliers e.g. "+ (4)" or "-(4)"
+  const isolatedRegex = /([+-]?\s*)\(\s*(-?\d+(?:\/\d+)?)\s*\)(?!\s*\^)/g;
+  simplified = simplified.replace(isolatedRegex, (_, sign, val) => {
+    const s = sign.trim();
+    if (s === '-') {
+      const num = parseFloat(val);
+      const neg = -num;
+      return neg < 0 ? `- ${Math.abs(neg)}` : `+ ${neg}`;
+    }
+    return `+ ${val}`;
   });
 
   try {
