@@ -4,6 +4,7 @@ import { solveLinearEquation } from './linear-solver.ts';
 import { factorPolynomialGCF, Polynomial } from './polynomial.ts';
 import { expandPolynomial, factorTrinomial } from './factoring.ts';
 import { evaluateSubstitution } from './substitution.ts';
+import { generateSolutionPaths } from './multipath.ts';
 import type { SolveResult } from '../types.ts';
 
 export function solveGrade9Math(
@@ -33,6 +34,19 @@ export function solveGrade9Math(
       }
     }
     if (Object.keys(activeValues).length > 0) {
+      const paths = generateSolutionPaths(rawInput, activeValues);
+      if (paths.length > 1) {
+        return {
+          success: true,
+          type: 'equation',
+          original: rawInput,
+          steps: paths[0].steps,
+          finalAnswer: paths[0].finalAnswer,
+          paths,
+          activePathId: paths[0].id,
+          strategyLabel: paths[0].strategyLabel,
+        };
+      }
       return evaluateSubstitution(rawInput, activeValues);
     }
   }
@@ -82,6 +96,19 @@ export function solveGrade9Math(
 
   // 1. Equations (has '=')
   if (normalized.includes('=')) {
+    const paths = generateSolutionPaths(sanitized, variableValues);
+    if (paths.length > 1) {
+      return {
+        success: true,
+        type: 'equation',
+        original: rawInput,
+        steps: paths[0].steps,
+        finalAnswer: paths[0].finalAnswer,
+        paths,
+        activePathId: paths[0].id,
+        strategyLabel: paths[0].strategyLabel,
+      };
+    }
     return finishResult(solveLinearEquation(normalized));
   }
 

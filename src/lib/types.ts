@@ -7,6 +7,13 @@ export interface MathStep {
   isFinal?: boolean;
 }
 
+export interface SolutionPath {
+  id: string;
+  strategyLabel: string;
+  steps: MathStep[];
+  finalAnswer: string;
+}
+
 export interface SolveResult {
   success: boolean;
   type: 'calculator' | 'simplify' | 'equation';
@@ -14,6 +21,9 @@ export interface SolveResult {
   steps: MathStep[];
   finalAnswer: string;
   error?: string;
+  paths?: SolutionPath[];
+  activePathId?: string;
+  strategyLabel?: string;
 }
 
 export interface PresetProblem {

@@ -1,13 +1,50 @@
 import { parseTerms, formatTerms } from './simplify.ts';
 import { Fraction } from './fraction.ts';
 import { Polynomial } from './polynomial.ts';
-import type { MathStep } from '../types.ts';
+import type { MathStep, SolutionPath } from '../types.ts';
 
 export interface ValidationResult {
   status: 'correct' | 'incorrect' | 'skipped';
   matchedStepIndex?: number;
   skippedSteps?: MathStep[];
   message: string;
+}
+
+export interface MultiPathValidationResult extends ValidationResult {
+  activePathId?: string;
+  switchedPath?: SolutionPath;
+}
+
+export function validateStepMultiPath(
+  userInput: string,
+  currentIndex: number,
+  activeSteps: MathStep[],
+  availablePaths?: SolutionPath[]
+): MultiPathValidationResult {
+  // 1. Check against active path
+  const activeRes = validateStep(userInput, currentIndex, activeSteps);
+  if (activeRes.status === 'correct' || activeRes.status === 'skipped') {
+    return activeRes;
+  }
+
+  // 2. If on the initial branching step (currentIndex === 0) and alternate paths exist:
+  if (currentIndex === 0 && availablePaths && availablePaths.length > 1) {
+    for (const altPath of availablePaths) {
+      if (altPath.steps.length > 0) {
+        const altCheck = validateStep(userInput, 0, altPath.steps);
+        if (altCheck.status === 'correct' || altCheck.status === 'skipped') {
+          return {
+            ...altCheck,
+            switchedPath: altPath,
+            activePathId: altPath.id,
+            message: `Nice strategy! Switched to ${altPath.strategyLabel}.`,
+          };
+        }
+      }
+    }
+  }
+
+  return activeRes;
 }
 
 export function validateStep(
