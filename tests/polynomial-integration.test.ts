@@ -46,4 +46,38 @@ describe('Polynomial Factoring & Expansion Integration', () => {
     expect(res.success).toBe(true);
     expect(res.finalAnswer).toBe('(x - 4)(x + 4)');
   });
+
+  it('combines higher-degree like terms instead of factoring when like terms exist', () => {
+    // 3x^2 + 5x - x^2 + 2x -> 2x^2 + 7x (should NOT factor to x(2x + 7))
+    const res = solveGrade9Math('3x^2 + 5x - x^2 + 2x');
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('2x^2 + 7x');
+  });
+
+  it('expands monomial-times-polynomial expressions like 2x(3x - 5)', () => {
+    const res = solveGrade9Math('2x(3x - 5)');
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('6x^2 - 10x');
+  });
+
+  it('does not corrupt English words when restoring non-x variable letters', () => {
+    const res = solveGrade9Math('y^2 - 16');
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('(y - 4)(y + 4)');
+    for (const step of res.steps) {
+      expect(step.action).not.toContain('eypression');
+      expect(step.rule).not.toContain('eypression');
+    }
+  });
+
+  it('validates commutative terms inside binomial factors like (3 + x)(5 + x)', () => {
+    const res = solveGrade9Math('(x + 3)(x + 5)');
+    const step1 = res.steps.find(s => s.expression === 'x^2 + 8x + 15') || res.steps[res.steps.length - 1];
+    expect(step1).toBeDefined();
+
+    const trinomial = solveGrade9Math('x^2 + 5x + 6');
+    // Expected is (x + 2)(x + 3); student types (3 + x)(2 + x)
+    const valid = validateStep('(3 + x)(2 + x)', 1, trinomial.steps);
+    expect(valid.status).toBe('correct');
+  });
 });

@@ -41,15 +41,22 @@ export function solveGrade9Math(rawInput: string): SolveResult {
     normalized = sanitized.replace(new RegExp(activeVar, 'g'), 'x');
   }
 
+  const replaceVarToken = (str: string): string => {
+    if (activeVar === 'x') return str;
+    // Replace isolated variable x (not part of words like "expression" or "expand")
+    return str.replace(/(?<![a-zA-Z])x(?![a-zA-Z])/g, activeVar);
+  };
+
   const finishResult = (res: SolveResult): SolveResult => {
     if (activeVar !== 'x') {
       res.original = rawInput;
-      res.finalAnswer = res.finalAnswer.replace(/x/g, activeVar);
+      res.finalAnswer = replaceVarToken(res.finalAnswer);
       res.steps = res.steps.map((s) => ({
         ...s,
-        expression: s.expression.replace(/x/g, activeVar),
-        action: s.action.replace(/x/g, activeVar),
-        title: s.title.replace(/x/g, activeVar),
+        expression: replaceVarToken(s.expression),
+        action: replaceVarToken(s.action),
+        title: replaceVarToken(s.title),
+        rule: replaceVarToken(s.rule),
       }));
     }
     return res;
@@ -60,8 +67,11 @@ export function solveGrade9Math(rawInput: string): SolveResult {
     return finishResult(solveLinearEquation(normalized));
   }
 
-  // 2. Product of Binomials FOIL: e.g. (x + 3)(x + 5)
-  if (/^\([^()]+\)\s*\([^()]+\)$/.test(normalized)) {
+  // 2. Product of Binomials FOIL or Monomial-times-Polynomial: e.g. (x + 3)(x + 5) or 2x(3x - 5)
+  if (
+    /^\([^()]+\)\s*\*?\s*\([^()]+\)$/.test(normalized) ||
+    /^[+-]?\s*[^()]+\s*\([^()]+\)$/.test(normalized)
+  ) {
     const expandRes = expandPolynomial(normalized);
     if (expandRes.success) {
       return finishResult(expandRes);
@@ -76,24 +86,9 @@ export function solveGrade9Math(rawInput: string): SolveResult {
     }
   }
 
-  // 4. Common Factoring (GCF): e.g. 6x^2y - 4xy^3 (no parentheses)
+  // 4. Higher-degree or Multi-variable Like Terms (without parentheses)
+  // Check this BEFORE GCF factoring so expressions like 3x^2 + 5x - x^2 + 2x combine to 2x^2 + 7x
   if (!normalized.includes('(')) {
-    try {
-      const poly = Polynomial.parse(normalized);
-      const combined = poly.combineLikeTerms();
-      if (combined.terms.length > 1) {
-        const gcfCheck = combined.factorGCF();
-        if (gcfCheck !== null) {
-          return finishResult(factorPolynomialGCF(normalized));
-        }
-      }
-    } catch {
-      // Fall through
-    }
-  }
-
-  // 5. Higher-degree or Multi-variable Like Terms (without parentheses)
-  if (!normalized.includes('(') && (normalized.includes('^') || distinctLetters.length > 1)) {
     try {
       const poly = Polynomial.parse(normalized);
       const combined = poly.combineLikeTerms();
@@ -115,6 +110,22 @@ export function solveGrade9Math(rawInput: string): SolveResult {
           ],
           finalAnswer,
         });
+      }
+    } catch {
+      // Fall through
+    }
+  }
+
+  // 5. Common Factoring (GCF): e.g. 6x^2y - 4xy^3 (no parentheses)
+  if (!normalized.includes('(')) {
+    try {
+      const poly = Polynomial.parse(normalized);
+      const combined = poly.combineLikeTerms();
+      if (combined.terms.length > 1) {
+        const gcfCheck = combined.factorGCF();
+        if (gcfCheck !== null) {
+          return finishResult(factorPolynomialGCF(normalized));
+        }
       }
     } catch {
       // Fall through

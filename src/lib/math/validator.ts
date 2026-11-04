@@ -92,19 +92,24 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
     } catch {}
   }
 
-  // Check product of binomials: e.g. (x + 2)(x + 3) vs (x + 3)(x + 2)
-  const binomRegex = /^\(([^()]+)\)\s*\(([^()]+)\)$/;
+  // Check product of binomials: e.g. (x + 2)(x + 3) vs (3 + x)(2 + x)
+  const binomRegex = /^\(([^()]+)\)\s*\*?\s*\(([^()]+)\)$/;
   const binomMatchA = binomRegex.exec(cleanA);
   const binomMatchB = binomRegex.exec(cleanB);
   if (binomMatchA && binomMatchB) {
-    const a1 = binomMatchA[1].replace(/\s+/g, '');
-    const a2 = binomMatchA[2].replace(/\s+/g, '');
-    const b1 = binomMatchB[1].replace(/\s+/g, '');
-    const b2 = binomMatchB[2].replace(/\s+/g, '');
+    try {
+      const pA1 = Polynomial.parse(binomMatchA[1]);
+      const pA2 = Polynomial.parse(binomMatchA[2]);
+      const pB1 = Polynomial.parse(binomMatchB[1]);
+      const pB2 = Polynomial.parse(binomMatchB[2]);
 
-    if ((a1 === b1 && a2 === b2) || (a1 === b2 && a2 === b1)) {
-      return true;
-    }
+      if (
+        (arePolynomialsEquivalent(pA1, pB1) && arePolynomialsEquivalent(pA2, pB2)) ||
+        (arePolynomialsEquivalent(pA1, pB2) && arePolynomialsEquivalent(pA2, pB1))
+      ) {
+        return true;
+      }
+    } catch {}
   }
 
   // Equation comparison
