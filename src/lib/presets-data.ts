@@ -77,6 +77,36 @@ export const GRADE_9_PRESETS: PresetProblem[] = [
     description: 'Multiplying fractions and adding result',
   },
 
+  // Factoring & Polynomials
+  {
+    id: 'factor-1',
+    category: 'factoring',
+    label: '6x^2y - 4xy^3',
+    formula: '6x^2y - 4xy^3',
+    description: 'Factoring by Greatest Common Factor (GCF = 2xy)',
+  },
+  {
+    id: 'factor-2',
+    category: 'factoring',
+    label: 'x^2 + 5x + 6',
+    formula: 'x^2 + 5x + 6',
+    description: 'Factoring simple trinomials (Product and Sum method)',
+  },
+  {
+    id: 'factor-3',
+    category: 'factoring',
+    label: 'x^2 - 16',
+    formula: 'x^2 - 16',
+    description: 'Factoring difference of squares: (x - 4)(x + 4)',
+  },
+  {
+    id: 'factor-4',
+    category: 'factoring',
+    label: '(x + 3)(x + 5)',
+    formula: '(x + 3)(x + 5)',
+    description: 'Expanding binomials using FOIL',
+  },
+
   // Calculator & BEDMAS
   {
     id: 'calc-1',

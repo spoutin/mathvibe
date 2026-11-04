@@ -3,10 +3,11 @@
 
   let { onSelect }: { onSelect: (formula: string) => void } = $props();
 
-  let activeCategory = $state<'all' | 'equations' | 'simplifying' | 'fractions' | 'calculator'>('all');
+  let activeCategory = $state<'all' | 'equations' | 'factoring' | 'simplifying' | 'fractions' | 'calculator'>('all');
 
   const categories = [
     { id: 'all', label: 'All Presets', icon: '✨' },
+    { id: 'factoring', label: 'Factoring (GCF/FOIL)', icon: '⚡' },
     { id: 'equations', label: 'Linear Equations', icon: '🎯' },
     { id: 'simplifying', label: 'Simplifying', icon: '🧩' },
     { id: 'fractions', label: 'Fractions', icon: '🍰' },

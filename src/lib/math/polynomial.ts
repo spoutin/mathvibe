@@ -197,7 +197,7 @@ export class Polynomial {
   }
 
   factorGCF(): { gcf: Monomial; quotient: Polynomial } | null {
-    if (this.terms.length === 0) return null;
+    if (this.terms.length <= 1) return null;
 
     // 1. Numerical GCD
     let numGcd = Math.abs(this.terms[0].coeff.numerator);

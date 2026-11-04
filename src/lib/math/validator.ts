@@ -1,5 +1,6 @@
 import { parseTerms, formatTerms } from './simplify.ts';
 import { Fraction } from './fraction.ts';
+import { Polynomial } from './polynomial.ts';
 import type { MathStep } from '../types.ts';
 
 export interface ValidationResult {
@@ -66,6 +67,46 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
     return true;
   }
 
+  // Factored form requirement:
+  // If target answer is factored into brackets e.g. "2xy(3x - 2y^2)" or "(x + 2)(x + 3)",
+  // the student's answer must also be factored (must contain brackets)
+  const isTargetFactored = /\([^()]+\)/.test(cleanB) && !cleanB.includes('=');
+  const isInputFactored = /\([^()]+\)/.test(cleanA);
+  if (isTargetFactored && !isInputFactored) {
+    return false;
+  }
+
+  // Check GCF factored form: e.g. 2xy(3x - 2y^2) vs 2xy(-2y^2 + 3x)
+  const gcfRegex = /^([+-]?\s*[^()]+)\s*\(([^()]+)\)$/;
+  const gcfMatchA = gcfRegex.exec(cleanA);
+  const gcfMatchB = gcfRegex.exec(cleanB);
+  if (gcfMatchA && gcfMatchB) {
+    try {
+      const outerPolyA = Polynomial.parse(gcfMatchA[1]);
+      const outerPolyB = Polynomial.parse(gcfMatchB[1]);
+      if (arePolynomialsEquivalent(outerPolyA, outerPolyB)) {
+        const polyA = Polynomial.parse(gcfMatchA[2]);
+        const polyB = Polynomial.parse(gcfMatchB[2]);
+        if (arePolynomialsEquivalent(polyA, polyB)) return true;
+      }
+    } catch {}
+  }
+
+  // Check product of binomials: e.g. (x + 2)(x + 3) vs (x + 3)(x + 2)
+  const binomRegex = /^\(([^()]+)\)\s*\(([^()]+)\)$/;
+  const binomMatchA = binomRegex.exec(cleanA);
+  const binomMatchB = binomRegex.exec(cleanB);
+  if (binomMatchA && binomMatchB) {
+    const a1 = binomMatchA[1].replace(/\s+/g, '');
+    const a2 = binomMatchA[2].replace(/\s+/g, '');
+    const b1 = binomMatchB[1].replace(/\s+/g, '');
+    const b2 = binomMatchB[2].replace(/\s+/g, '');
+
+    if ((a1 === b1 && a2 === b2) || (a1 === b2 && a2 === b1)) {
+      return true;
+    }
+  }
+
   // Equation comparison
   if (cleanA.includes('=') && cleanB.includes('=')) {
     const partsA = cleanA.split('=').map((s) => s.trim());
@@ -86,14 +127,36 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
     }
   }
 
-  // Non-equation algebraic expression comparison (e.g. "8 + x" vs "x + 8")
+  // General polynomial expression comparison
   if (!cleanA.includes('=') && !cleanB.includes('=')) {
+    try {
+      const polyA = Polynomial.parse(cleanA).combineLikeTerms().format();
+      const polyB = Polynomial.parse(cleanB).combineLikeTerms().format();
+      if (polyA === polyB) {
+        return true;
+      }
+    } catch {}
+
     if (isSideEquivalent(cleanA, cleanB)) {
       return true;
     }
   }
 
   return false;
+}
+
+function arePolynomialsEquivalent(pA: Polynomial, pB: Polynomial): boolean {
+  const cA = pA.combineLikeTerms();
+  const cB = pB.combineLikeTerms();
+  if (cA.terms.length !== cB.terms.length) return false;
+
+  for (const tA of cA.terms) {
+    const matching = cB.terms.find(
+      (tB) => tB.signature === tA.signature && tB.coeff.toString() === tA.coeff.toString()
+    );
+    if (!matching) return false;
+  }
+  return true;
 }
 
 function isSideEquivalent(sideA: string, sideB: string): boolean {

@@ -18,7 +18,7 @@ export interface SolveResult {
 
 export interface PresetProblem {
   id: string;
-  category: 'equations' | 'simplifying' | 'fractions' | 'calculator';
+  category: 'equations' | 'simplifying' | 'fractions' | 'calculator' | 'factoring';
   label: string;
   formula: string;
   description: string;
