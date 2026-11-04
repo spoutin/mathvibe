@@ -116,7 +116,7 @@
         </div>
         <div>
           <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 leading-tight flex items-center gap-1.5">
-            Grade 9 Math Quest
+            MathVibe
             <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-bold border border-indigo-200">
               Interactive Practice
             </span>
