@@ -72,6 +72,17 @@ describe('Variable Substitution End-to-End Integration', () => {
     expect(evalInput.status).toBe('correct');
   });
 
+  it('validates skip-step overrides mapping to destination index', () => {
+    const res = solveGrade9Math('4(x - 2) = 2x + 10');
+    // Step 0: 4x - 8 = 2x + 10
+    // Step 1: 2x - 8 = 10
+    // Step 2: 2x = 18
+    // Student skips from initial to 2x = 18 which is step index 2
+    const skipValid = validateStep('2x = 18', 0, res.steps);
+    expect(skipValid.status).toBe('skipped');
+    expect(skipValid.matchedStepIndex).toBe(2);
+  });
+
   it('evaluates expression down to a single final numerical step without leaving an intermediate final form', () => {
     const res = solveGrade9Math('5x^2 - x', { x: '-3' });
     expect(res.success).toBe(true);

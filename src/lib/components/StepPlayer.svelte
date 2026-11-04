@@ -78,6 +78,7 @@
       activeSteps = validation.switchedPath.steps;
       activeStrategyLabel = validation.switchedPath.strategyLabel;
       stepStatuses = new Array(activeSteps.length).fill('pending');
+      studentOverrides = {};
       const targetIdx = validation.matchedStepIndex ?? 0;
       for (let j = 0; j < targetIdx; j++) {
         stepStatuses[j] = 'skipped';
