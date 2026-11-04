@@ -146,6 +146,75 @@
 
   <!-- Main Content Container -->
   <main class="max-w-3xl w-full mx-auto px-4 py-6 sm:py-8 flex-1 space-y-6">
+    <!-- Active Step Player -->
+    {#if result && result.success}
+      <section class="space-y-4">
+        {#key result}
+          <StepPlayer
+            {result}
+            onReset={handleReset}
+            externalInput={activeStepInput}
+            onInputUpdate={(val) => (activeStepInput = val)}
+          />
+        {/key}
+      </section>
+    {:else if !result}
+      <!-- Empty Welcome / Intro State -->
+      <section class="bg-white/70 border-2 border-slate-200/90 rounded-3xl p-6 sm:p-8 text-center shadow-sm space-y-5">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-indigo-50 text-3xl border border-indigo-200 mb-1">
+          ✍️
+        </div>
+        <div class="max-w-md mx-auto space-y-2">
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900">
+            Practice Grade 9 Math Step by Step
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Test your skills by typing each intermediate step. The solver validates your answer in real time, alerts you if you skipped ahead, and offers hints when needed.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-left">
+          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-3.5">
+            <span class="text-xl">✅</span>
+            <h4 class="font-bold text-xs text-indigo-950 mt-1 mb-0.5">Real-Time Validation</h4>
+            <p class="text-[11px] text-indigo-800">
+              Type your next algebraic move and verify it immediately.
+            </p>
+          </div>
+
+          <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5">
+            <span class="text-xl">⚡</span>
+            <h4 class="font-bold text-xs text-amber-950 mt-1 mb-0.5">Skipped-Step Intelligence</h4>
+            <p class="text-[11px] text-amber-800">
+              Did mental math? It recognizes valid future steps and flags what was jumped.
+            </p>
+          </div>
+
+          <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3.5">
+            <span class="text-xl">💡</span>
+            <h4 class="font-bold text-xs text-emerald-950 mt-1 mb-0.5">Scaffolding &amp; Hints</h4>
+            <p class="text-[11px] text-emerald-800">
+              Never get stuck with on-demand curriculum hints and step reveals.
+            </p>
+          </div>
+        </div>
+      </section>
+    {/if}
+
+    <!-- Error State Display -->
+    {#if result && !result.success}
+      <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 shadow-sm text-rose-900 flex items-start gap-3">
+        <span class="text-2xl leading-none">⚠️</span>
+        <div>
+          <h4 class="font-extrabold text-sm mb-1">Notice</h4>
+          <p class="text-xs sm:text-sm font-medium leading-relaxed">{result.error}</p>
+          <p class="text-xs text-rose-700 mt-2">
+            💡 Tip: Try clicking one of the preset practice problems below to see working examples.
+          </p>
+        </div>
+      </div>
+    {/if}
+
     <!-- Equation Input Bar -->
     <section class="bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
       <div class="flex items-center justify-between">
@@ -217,75 +286,6 @@
         </div>
       {/if}
     </section>
-
-    <!-- Error State Display -->
-    {#if result && !result.success}
-      <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 shadow-sm text-rose-900 flex items-start gap-3">
-        <span class="text-2xl leading-none">⚠️</span>
-        <div>
-          <h4 class="font-extrabold text-sm mb-1">Notice</h4>
-          <p class="text-xs sm:text-sm font-medium leading-relaxed">{result.error}</p>
-          <p class="text-xs text-rose-700 mt-2">
-            💡 Tip: Try clicking one of the preset practice problems below to see working examples.
-          </p>
-        </div>
-      </div>
-    {/if}
-
-    <!-- Active Step Player -->
-    {#if result && result.success}
-      <section class="space-y-4">
-        {#key result}
-          <StepPlayer
-            {result}
-            onReset={handleReset}
-            externalInput={activeStepInput}
-            onInputUpdate={(val) => (activeStepInput = val)}
-          />
-        {/key}
-      </section>
-    {:else if !result}
-      <!-- Empty Welcome / Intro State -->
-      <section class="bg-white/70 border-2 border-slate-200/90 rounded-3xl p-6 sm:p-8 text-center shadow-sm space-y-5">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-indigo-50 text-3xl border border-indigo-200 mb-1">
-          ✍️
-        </div>
-        <div class="max-w-md mx-auto space-y-2">
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900">
-            Practice Grade 9 Math Step by Step
-          </h2>
-          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Test your skills by typing each intermediate step. The solver validates your answer in real time, alerts you if you skipped ahead, and offers hints when needed.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-left">
-          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-3.5">
-            <span class="text-xl">✅</span>
-            <h4 class="font-bold text-xs text-indigo-950 mt-1 mb-0.5">Real-Time Validation</h4>
-            <p class="text-[11px] text-indigo-800">
-              Type your next algebraic move and verify it immediately.
-            </p>
-          </div>
-
-          <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5">
-            <span class="text-xl">⚡</span>
-            <h4 class="font-bold text-xs text-amber-950 mt-1 mb-0.5">Skipped-Step Intelligence</h4>
-            <p class="text-[11px] text-amber-800">
-              Did mental math? It recognizes valid future steps and flags what was jumped.
-            </p>
-          </div>
-
-          <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3.5">
-            <span class="text-xl">💡</span>
-            <h4 class="font-bold text-xs text-emerald-950 mt-1 mb-0.5">Scaffolding &amp; Hints</h4>
-            <p class="text-[11px] text-emerald-800">
-              Never get stuck with on-demand curriculum hints and step reveals.
-            </p>
-          </div>
-        </div>
-      </section>
-    {/if}
 
     <!-- Grade 9 Preset Library -->
     <section>
