@@ -24,6 +24,7 @@
   let feedbackMessage = $state<{ type: 'success' | 'error' | 'skipped'; text: string } | null>(null);
   let stepStatuses = $state<('solved' | 'revealed' | 'skipped' | 'pending')[]>([]);
   let skippedNotices = $state<Record<number, string>>({});
+  let studentOverrides = $state<Record<number, string>>({});
 
   $effect(() => {
     if (result) {
@@ -35,6 +36,7 @@
       feedbackMessage = null;
       stepStatuses = new Array(result.steps.length).fill('pending');
       skippedNotices = {};
+      studentOverrides = {};
     }
   });
 
@@ -81,6 +83,7 @@
         stepStatuses[j] = 'skipped';
       }
       stepStatuses[targetIdx] = 'solved';
+      studentOverrides[targetIdx] = studentInput;
       feedbackMessage = {
         type: 'success',
         text: validation.message,
@@ -98,6 +101,7 @@
 
     if (validation.status === 'correct') {
       stepStatuses[currentStepIndex] = 'solved';
+      studentOverrides[currentStepIndex] = studentInput;
       feedbackMessage = null;
       studentInput = '';
       onInputUpdate?.('');
@@ -120,6 +124,7 @@
       }
 
       stepStatuses[targetIdx] = 'solved';
+      studentOverrides[targetIdx] = studentInput;
       feedbackMessage = null;
       studentInput = '';
       onInputUpdate?.('');
@@ -250,6 +255,7 @@
         isCurrent={idx === currentStepIndex}
         isWaitingForInput={idx === currentStepIndex && !isCompleted}
         userInput={studentInput}
+        userOverride={studentOverrides[idx] || null}
         onUserInputChange={handleInputChange}
         onSubmitStep={submitCurrentStep}
         onRevealStep={revealCurrentStep}

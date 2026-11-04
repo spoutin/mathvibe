@@ -6,6 +6,7 @@
     isCurrent = false,
     isWaitingForInput = false,
     userInput = '',
+    userOverride = null,
     onUserInputChange,
     onSubmitStep,
     onRevealStep,
@@ -19,6 +20,7 @@
     isCurrent?: boolean;
     isWaitingForInput?: boolean;
     userInput?: string;
+    userOverride?: string | null;
     onUserInputChange?: (val: string) => void;
     onSubmitStep?: () => void;
     onRevealStep?: () => void;
@@ -168,7 +170,7 @@
         ? 'bg-white text-emerald-800 border-emerald-300 shadow-inner text-center text-xl sm:text-2xl'
         : 'bg-slate-50 text-slate-900 border-slate-200 shadow-inner'}"
     >
-      {step.expression}
+      {userOverride || step.expression}
     </div>
 
     <!-- Action explanation -->
