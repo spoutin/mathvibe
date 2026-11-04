@@ -107,6 +107,32 @@ export const GRADE_9_PRESETS: PresetProblem[] = [
     description: 'Expanding binomials using FOIL',
   },
 
+  // Evaluating Expressions & Formulas with Variables
+  {
+    id: 'eval-1',
+    category: 'evaluation',
+    label: '2x^2 - 3y + 5 (x=4, y=-2)',
+    formula: '2x^2 - 3y + 5',
+    description: 'Evaluating multi-variable expression with negative values',
+    variables: { x: '4', y: '-2' },
+  },
+  {
+    id: 'eval-2',
+    category: 'evaluation',
+    label: 'y = 2x + 5 (x=3)',
+    formula: 'y = 2x + 5',
+    description: 'Linear formula evaluation for y when x is given',
+    variables: { x: '3' },
+  },
+  {
+    id: 'eval-3',
+    category: 'evaluation',
+    label: '4x + 6 (x=1/2)',
+    formula: '4x + 6',
+    description: 'Fraction variable substitution: 4(1/2) + 6 = 8',
+    variables: { x: '1/2' },
+  },
+
   // Calculator & BEDMAS
   {
     id: 'calc-1',

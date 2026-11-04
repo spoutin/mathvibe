@@ -66,8 +66,9 @@
     }
   }
 
-  function handlePresetSelect(presetFormula: string) {
+  function handlePresetSelect(presetFormula: string, defaultVars?: Record<string, string>) {
     formula = presetFormula;
+    variableValues = defaultVars ? { ...defaultVars } : {};
     activeStepInput = '';
     executeSolve();
     window.scrollTo({ top: 0, behavior: 'smooth' });

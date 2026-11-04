@@ -1,12 +1,13 @@
 <script lang="ts">
   import { GRADE_9_PRESETS } from '../presets-data.ts';
 
-  let { onSelect }: { onSelect: (formula: string) => void } = $props();
+  let { onSelect }: { onSelect: (formula: string, defaultVariables?: Record<string, string>) => void } = $props();
 
-  let activeCategory = $state<'all' | 'equations' | 'factoring' | 'simplifying' | 'fractions' | 'calculator'>('all');
+  let activeCategory = $state<'all' | 'equations' | 'evaluation' | 'factoring' | 'simplifying' | 'fractions' | 'calculator'>('all');
 
   const categories = [
     { id: 'all', label: 'All Presets', icon: '✨' },
+    { id: 'evaluation', label: 'Substitution (x=4)', icon: '🔢' },
     { id: 'factoring', label: 'Factoring (GCF/FOIL)', icon: '⚡' },
     { id: 'equations', label: 'Linear Equations', icon: '🎯' },
     { id: 'simplifying', label: 'Simplifying', icon: '🧩' },
@@ -53,7 +54,7 @@
     {#each filteredPresets as preset}
       <button
         type="button"
-        onclick={() => onSelect(preset.formula)}
+        onclick={() => onSelect(preset.formula, preset.variables)}
         class="text-left p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/70 hover:border-indigo-300 transition-all group flex flex-col justify-between"
       >
         <div class="flex items-center justify-between gap-2 mb-1">
