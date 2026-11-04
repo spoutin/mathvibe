@@ -64,16 +64,27 @@
     if (expression) livePreview();
   }
 
+  const isDisplayValid = $derived(
+    resultDisplay !== 'Error' &&
+    !resultDisplay.toLowerCase().includes('error') &&
+    !resultDisplay.toLowerCase().includes('undefined') &&
+    resultDisplay !== 'NaN' &&
+    resultDisplay !== 'Infinity'
+  );
+
   function copyToClipboard() {
-    navigator.clipboard.writeText(resultDisplay);
-    copyFeedback = true;
-    setTimeout(() => {
-      copyFeedback = false;
-    }, 1500);
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(resultDisplay).then(() => {
+        copyFeedback = true;
+        setTimeout(() => {
+          copyFeedback = false;
+        }, 1500);
+      }).catch(() => {});
+    }
   }
 
   function handleInsert() {
-    if (onInsert) {
+    if (onInsert && isDisplayValid) {
       onInsert(resultDisplay);
       onClose();
     }
@@ -83,7 +94,14 @@
     if (e.key === 'Escape') {
       onClose();
     } else if (e.key === 'Enter') {
+      e.preventDefault();
       evaluate();
+    } else if (e.key === 'Backspace') {
+      handleBackspace();
+    } else if (/^[0-9]$/.test(e.key) || e.key === '.') {
+      append(e.key);
+    } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '^' || e.key === '(' || e.key === ')' || e.key === '%' || e.key === '!') {
+      append(e.key);
     }
   }
 </script>
@@ -448,7 +466,8 @@
       <button
         type="button"
         onclick={handleInsert}
-        class="btn-3d px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs rounded-xl border-b-4 border-indigo-900 shadow-sm flex items-center gap-1.5 active:translate-y-0.5 cursor-pointer"
+        disabled={!isDisplayValid}
+        class="btn-3d px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white font-extrabold text-xs rounded-xl border-b-4 border-indigo-900 shadow-sm flex items-center gap-1.5 active:translate-y-0.5 cursor-pointer disabled:cursor-not-allowed"
       >
         <span>Insert into Step</span>
         <span>↵</span>

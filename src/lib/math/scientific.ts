@@ -20,7 +20,10 @@ export function evaluateScientific(
     const rpn = shuntingYard(tokens);
     const val = evaluateRPN(rpn, angleMode);
 
-    // Clean floating point artifacts
+    if (!Number.isFinite(val) || Number.isNaN(val)) {
+      throw new Error('Domain error: result is undefined or not a real number.');
+    }
+
     const cleanedVal = cleanFloat(val);
     return {
       success: true,
@@ -37,7 +40,7 @@ export function evaluateScientific(
   }
 }
 
-type TokenType = 'num' | 'op' | 'func' | 'lparen' | 'rparen' | 'postfix';
+type TokenType = 'num' | 'op' | 'func' | 'lparen' | 'rparen' | 'postfix' | 'unary';
 
 interface Token {
   type: TokenType;
@@ -59,7 +62,7 @@ function tokenizeScientific(input: string, lastAns: number): Token[] {
   while (i < str.length) {
     const ch = str[i];
 
-    // Numbers & decimals
+    // Numbers & decimals (positive numbers)
     if (/\d/.test(ch) || (ch === '.' && /\d/.test(str[i + 1] || ''))) {
       let numStr = '';
       while (i < str.length && (/\d/.test(str[i]) || str[i] === '.')) {
@@ -101,16 +104,21 @@ function tokenizeScientific(input: string, lastAns: number): Token[] {
     }
     if (matchedFunc) continue;
 
-    // Postfix factorial (!)
+    // Postfix operators: factorial (!) and percent (%)
     if (ch === '!') {
       tokens.push({ type: 'postfix', value: '!' });
       i++;
       continue;
     }
 
+    if (ch === '%') {
+      tokens.push({ type: 'postfix', value: '%' });
+      i++;
+      continue;
+    }
+
     // Parentheses
     if (ch === '(') {
-      // Implicit multiplication before '('
       const prev = tokens[tokens.length - 1];
       if (prev && (prev.type === 'num' || prev.type === 'rparen' || prev.type === 'postfix')) {
         tokens.push({ type: 'op', value: '*' });
@@ -126,27 +134,39 @@ function tokenizeScientific(input: string, lastAns: number): Token[] {
       continue;
     }
 
-    // Operators
-    if (ch === '+' || ch === '*' || ch === '/' || ch === '^' || ch === '%') {
-      tokens.push({ type: 'op', value: ch });
-      i++;
-      continue;
-    }
-
+    // Minus sign handling (binary vs unary)
     if (ch === '-') {
-      // Unary minus
       const prev = tokens[tokens.length - 1];
-      const isUnary = !prev || prev.type === 'op' || prev.type === 'lparen' || prev.type === 'func';
+      const isUnary = !prev || prev.type === 'op' || prev.type === 'lparen' || prev.type === 'func' || prev.type === 'unary';
+
       if (isUnary) {
-        tokens.push({ type: 'num', value: '-1', num: -1 });
-        tokens.push({ type: 'op', value: '*' });
         i++;
-        continue;
+        // Check if followed by digits -> read negative number directly
+        if (i < str.length && (/\d/.test(str[i]) || str[i] === '.')) {
+          let numStr = '-';
+          while (i < str.length && (/\d/.test(str[i]) || str[i] === '.')) {
+            numStr += str[i];
+            i++;
+          }
+          tokens.push({ type: 'num', value: numStr, num: parseFloat(numStr) });
+          continue;
+        } else {
+          // Unary negation operator for expressions e.g. -(3 + 4) or -sin(30)
+          tokens.push({ type: 'unary', value: 'neg' });
+          continue;
+        }
       } else {
         tokens.push({ type: 'op', value: '-' });
         i++;
         continue;
       }
+    }
+
+    // Binary Operators
+    if (ch === '+' || ch === '*' || ch === '/' || ch === '^') {
+      tokens.push({ type: 'op', value: ch });
+      i++;
+      continue;
     }
 
     throw new Error(`Unrecognized symbol: ${ch}`);
@@ -160,8 +180,8 @@ const PRECEDENCE: Record<string, number> = {
   '-': 1,
   '*': 2,
   '/': 2,
-  '%': 2,
   '^': 3,
+  'neg': 4,
 };
 
 function shuntingYard(tokens: Token[]): Token[] {
@@ -175,11 +195,13 @@ function shuntingYard(tokens: Token[]): Token[] {
       operatorStack.push(token);
     } else if (token.type === 'postfix') {
       output.push(token);
+    } else if (token.type === 'unary') {
+      operatorStack.push(token);
     } else if (token.type === 'op') {
       const pCurrent = PRECEDENCE[token.value] || 0;
       while (operatorStack.length > 0) {
         const top = operatorStack[operatorStack.length - 1];
-        if (top.type === 'op') {
+        if (top.type === 'op' || top.type === 'unary') {
           const pTop = PRECEDENCE[top.value] || 0;
           if (token.value === '^' ? pCurrent < pTop : pCurrent <= pTop) {
             output.push(operatorStack.pop()!);
@@ -229,10 +251,17 @@ function evaluateRPN(rpn: Token[], angleMode: 'deg' | 'rad'): number {
   for (const token of rpn) {
     if (token.type === 'num') {
       stack.push(token.num!);
-    } else if (token.type === 'postfix' && token.value === '!') {
+    } else if (token.type === 'unary' && token.value === 'neg') {
+      if (stack.length < 1) throw new Error('Syntax error.');
+      stack.push(-stack.pop()!);
+    } else if (token.type === 'postfix') {
       if (stack.length < 1) throw new Error('Syntax error.');
       const n = stack.pop()!;
-      stack.push(factorial(n));
+      if (token.value === '!') {
+        stack.push(factorial(n));
+      } else if (token.value === '%') {
+        stack.push(n / 100);
+      }
     } else if (token.type === 'op') {
       if (stack.length < 2) throw new Error('Syntax error.');
       const b = stack.pop()!;
@@ -252,10 +281,9 @@ function evaluateRPN(rpn: Token[], angleMode: 'deg' | 'rad'): number {
           if (b === 0) throw new Error('Division by zero is undefined.');
           stack.push(a / b);
           break;
-        case '%':
-          stack.push((a * b) / 100);
-          break;
         case '^':
+          if (a === 0 && b < 0) throw new Error('Division by zero: 0 raised to a negative power.');
+          if (a < 0 && !Number.isInteger(b)) throw new Error('Domain error: negative number to a fractional power.');
           stack.push(Math.pow(a, b));
           break;
         default:
@@ -266,18 +294,23 @@ function evaluateRPN(rpn: Token[], angleMode: 'deg' | 'rad'): number {
       const arg = stack.pop()!;
 
       switch (token.value) {
-        case 'sin':
-          stack.push(Math.sin(toRad(arg)));
+        case 'sin': {
+          const val = Math.sin(toRad(arg));
+          stack.push(snapTrig(val));
           break;
-        case 'cos':
-          stack.push(Math.cos(toRad(arg)));
+        }
+        case 'cos': {
+          const val = Math.cos(toRad(arg));
+          stack.push(snapTrig(val));
           break;
+        }
         case 'tan': {
           const rad = toRad(arg);
           if (Math.abs(Math.cos(rad)) < 1e-12) {
             throw new Error('Domain error: tan is undefined at 90 degrees.');
           }
-          stack.push(Math.tan(rad));
+          const val = Math.tan(rad);
+          stack.push(snapTrig(val));
           break;
         }
         case 'asin':
@@ -325,9 +358,21 @@ function evaluateRPN(rpn: Token[], angleMode: 'deg' | 'rad'): number {
   return stack[0];
 }
 
+function snapTrig(val: number): number {
+  if (Math.abs(val) < 1e-12) return 0;
+  if (Math.abs(val - 0.5) < 1e-12) return 0.5;
+  if (Math.abs(val + 0.5) < 1e-12) return -0.5;
+  if (Math.abs(val - 1) < 1e-12) return 1;
+  if (Math.abs(val + 1) < 1e-12) return -1;
+  return val;
+}
+
 function factorial(n: number): number {
   if (!Number.isInteger(n) || n < 0) {
     throw new Error('Domain error: factorial is only defined for non-negative integers.');
+  }
+  if (n > 170) {
+    throw new Error('Domain error: factorial overflow (max 170).');
   }
   if (n === 0 || n === 1) return 1;
   let res = 1;
@@ -339,7 +384,6 @@ function factorial(n: number): number {
 
 function cleanFloat(val: number): number {
   if (!Number.isFinite(val)) return val;
-  // Snap near-integers and clean precision
   const rounded = Math.round(val * 1e12) / 1e12;
   return rounded;
 }

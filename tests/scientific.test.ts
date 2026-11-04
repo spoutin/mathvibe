@@ -83,4 +83,44 @@ describe('High School Scientific Calculator Engine', () => {
     expect(res.success).toBe(true);
     expect(res.result).toBe(35);
   });
+
+  it('evaluates negative exponents correctly (2^-2 and 10^-3)', () => {
+    const r1 = evaluateScientific('2^-2', 'deg');
+    expect(r1.success).toBe(true);
+    expect(r1.result).toBe(0.25);
+
+    const r2 = evaluateScientific('10^-3', 'deg');
+    expect(r2.success).toBe(true);
+    expect(r2.result).toBe(0.001);
+  });
+
+  it('evaluates division by negative numbers correctly (5 / -2 and 10 / -5)', () => {
+    const r1 = evaluateScientific('5 / -2', 'deg');
+    expect(r1.success).toBe(true);
+    expect(r1.result).toBe(-2.5);
+
+    const r2 = evaluateScientific('10 / -5', 'deg');
+    expect(r2.success).toBe(true);
+    expect(r2.result).toBe(-2);
+  });
+
+  it('evaluates percent % as a postfix operator', () => {
+    const r1 = evaluateScientific('50%', 'deg');
+    expect(r1.success).toBe(true);
+    expect(r1.result).toBe(0.5);
+
+    const r2 = evaluateScientific('200 * 15%', 'deg');
+    expect(r2.success).toBe(true);
+    expect(r2.result).toBe(30);
+  });
+
+  it('rejects non-real NaN and infinite calculations with a friendly domain error', () => {
+    const r1 = evaluateScientific('(-4)^0.5', 'deg');
+    expect(r1.success).toBe(false);
+    expect(r1.error).toMatch(/domain error/i);
+
+    const r2 = evaluateScientific('0^-1', 'deg');
+    expect(r2.success).toBe(false);
+    expect(r2.error).toMatch(/division by zero|domain error/i);
+  });
 });
