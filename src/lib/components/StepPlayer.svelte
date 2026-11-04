@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SolveResult } from '../types.ts';
   import StepCard from './StepCard.svelte';
-  import { validateStep } from '../math/validator.ts';
+  import { validateStepMultiPath } from '../math/validator.ts';
   import { fireCelebrationConfetti } from '../confetti.ts';
 
   let {
@@ -16,6 +16,8 @@
     onInputUpdate?: (val: string) => void;
   } = $props();
 
+  let activeSteps = $state<MathStep[]>([]);
+  let activeStrategyLabel = $state('');
   let currentStepIndex = $state(0);
   let studentInput = $state('');
   let showHint = $state(false);
@@ -25,6 +27,8 @@
 
   $effect(() => {
     if (result) {
+      activeSteps = result.steps;
+      activeStrategyLabel = result.strategyLabel || '';
       currentStepIndex = 0;
       studentInput = '';
       showHint = false;
@@ -41,11 +45,11 @@
     }
   });
 
-  const totalSteps = $derived(result.steps.length);
+  const totalSteps = $derived(activeSteps.length);
   const isCompleted = $derived(currentStepIndex >= totalSteps);
   // Show all steps up to currentStepIndex (inclusive)
   const visibleSteps = $derived(
-    result.steps.slice(0, Math.min(totalSteps, currentStepIndex + 1))
+    activeSteps.slice(0, Math.min(totalSteps, currentStepIndex + 1))
   );
   const progressPercent = $derived(
     totalSteps > 0 ? Math.min(100, Math.round((currentStepIndex / totalSteps) * 100)) : 0
@@ -60,7 +64,33 @@
   function submitCurrentStep() {
     if (!studentInput.trim()) return;
 
-    const validation = validateStep(studentInput, currentStepIndex, result.steps);
+    const validation = validateStepMultiPath(
+      studentInput,
+      currentStepIndex,
+      activeSteps,
+      result.paths
+    );
+
+    // If student selected an alternative valid path on step 1
+    if (validation.switchedPath) {
+      activeSteps = validation.switchedPath.steps;
+      activeStrategyLabel = validation.switchedPath.strategyLabel;
+      stepStatuses = new Array(activeSteps.length).fill('pending');
+      stepStatuses[0] = 'solved';
+      feedbackMessage = {
+        type: 'success',
+        text: validation.message,
+      };
+      studentInput = '';
+      onInputUpdate?.('');
+      showHint = false;
+      currentStepIndex = 1;
+
+      if (currentStepIndex >= activeSteps.length) {
+        fireCelebrationConfetti();
+      }
+      return;
+    }
 
     if (validation.status === 'correct') {
       stepStatuses[currentStepIndex] = 'solved';
@@ -128,6 +158,8 @@
   }
 
   function handleResetAll() {
+    activeSteps = result.steps;
+    activeStrategyLabel = result.strategyLabel || '';
     currentStepIndex = 0;
     studentInput = '';
     onInputUpdate?.('');
@@ -149,7 +181,13 @@
           {result.original}
         </div>
       </div>
-      <div class="flex items-center gap-2 self-start sm:self-center">
+      <div class="flex flex-wrap items-center gap-2 self-start sm:self-center">
+        {#if activeStrategyLabel}
+          <span class="px-2.5 py-1 bg-purple-50 border border-purple-200 text-purple-700 font-extrabold text-xs rounded-full flex items-center gap-1 shadow-sm">
+            <span>🧭</span>
+            <span>{activeStrategyLabel}</span>
+          </span>
+        {/if}
         <span class="px-3 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 font-extrabold text-xs rounded-full">
           Step {Math.min(currentStepIndex + 1, totalSteps)} of {totalSteps}
         </span>
