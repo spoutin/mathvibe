@@ -60,7 +60,20 @@ export function evaluateSubstitution(
       const arithRes = solveArithmetic(substituted);
       if (arithRes.success) {
         // Append arithmetic steps (skipping initial echo if identical to substituted)
-        for (const s of arithRes.steps) {
+        for (let i = 0; i < arithRes.steps.length; i++) {
+          const s = arithRes.steps[i];
+          // Exclude any step that just repeats the substituted expression without work
+          if (!s.isFinal && s.expression === substituted) continue;
+
+          // If the final step is just an identical repetition of the previous line's expression, skip it
+          if (s.isFinal && i > 0 && s.expression === arithRes.steps[i - 1].expression) {
+            steps[steps.length - 1].isFinal = true;
+            steps[steps.length - 1].title = 'Final Evaluated Value';
+            steps[steps.length - 1].action = s.action;
+            steps[steps.length - 1].rule = s.rule;
+            continue;
+          }
+
           stepCount++;
           steps.push({
             ...s,
