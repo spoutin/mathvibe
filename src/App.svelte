@@ -146,20 +146,8 @@
 
   <!-- Main Content Container -->
   <main class="max-w-3xl w-full mx-auto px-4 py-6 sm:py-8 flex-1 space-y-6">
-    <!-- Active Step Player -->
-    {#if result && result.success}
-      <section class="space-y-4">
-        {#key result}
-          <StepPlayer
-            {result}
-            onReset={handleReset}
-            externalInput={activeStepInput}
-            onInputUpdate={(val) => (activeStepInput = val)}
-          />
-        {/key}
-      </section>
-    {:else if !result}
-      <!-- Empty Welcome / Intro State -->
+    <!-- Empty Welcome / Intro State (Shown initially before solving) -->
+    {#if !result}
       <section class="bg-white/70 border-2 border-slate-200/90 rounded-3xl p-6 sm:p-8 text-center shadow-sm space-y-5">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-indigo-50 text-3xl border border-indigo-200 mb-1">
           ✍️
@@ -199,20 +187,6 @@
           </div>
         </div>
       </section>
-    {/if}
-
-    <!-- Error State Display -->
-    {#if result && !result.success}
-      <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 shadow-sm text-rose-900 flex items-start gap-3">
-        <span class="text-2xl leading-none">⚠️</span>
-        <div>
-          <h4 class="font-extrabold text-sm mb-1">Notice</h4>
-          <p class="text-xs sm:text-sm font-medium leading-relaxed">{result.error}</p>
-          <p class="text-xs text-rose-700 mt-2">
-            💡 Tip: Try clicking one of the preset practice problems below to see working examples.
-          </p>
-        </div>
-      </div>
     {/if}
 
     <!-- Equation Input Bar -->
@@ -286,6 +260,34 @@
         </div>
       {/if}
     </section>
+
+    <!-- Error State Display -->
+    {#if result && !result.success}
+      <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 shadow-sm text-rose-900 flex items-start gap-3">
+        <span class="text-2xl leading-none">⚠️</span>
+        <div>
+          <h4 class="font-extrabold text-sm mb-1">Notice</h4>
+          <p class="text-xs sm:text-sm font-medium leading-relaxed">{result.error}</p>
+          <p class="text-xs text-rose-700 mt-2">
+            💡 Tip: Try clicking one of the preset practice problems below to see working examples.
+          </p>
+        </div>
+      </div>
+    {/if}
+
+    <!-- Active Step Player (Step 1, Step 2, etc. appears directly under formula input) -->
+    {#if result && result.success}
+      <section class="space-y-4">
+        {#key result}
+          <StepPlayer
+            {result}
+            onReset={handleReset}
+            externalInput={activeStepInput}
+            onInputUpdate={(val) => (activeStepInput = val)}
+          />
+        {/key}
+      </section>
+    {/if}
 
     <!-- Grade 9 Preset Library -->
     <section>
