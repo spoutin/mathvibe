@@ -55,4 +55,12 @@ describe('Variable Substitution End-to-End Integration', () => {
     expect(res.type).toBe('equation');
     expect(res.finalAnswer).toBe('y = 4');
   });
+
+  it('allows implicit multiplication evaluation in substitution like 5(9) + 3', () => {
+    const res = solveGrade9Math('5x^2 + y', { x: '-3', y: '3' });
+    // First step is 5(-3)^2 + (3)
+    // Student writes evaluated version 5(9) + 3 instead of 5 * 9 + 3
+    const evalInput = validateStep('5(9) + 3', 1, res.steps);
+    expect(evalInput.status).toBe('correct');
+  });
 });

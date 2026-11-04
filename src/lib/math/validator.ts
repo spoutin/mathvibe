@@ -1,6 +1,7 @@
 import { parseTerms, formatTerms } from './simplify.ts';
 import { Fraction } from './fraction.ts';
 import { Polynomial } from './polynomial.ts';
+import { evaluateScientific } from './scientific.ts';
 import type { MathStep, SolutionPath } from '../types.ts';
 
 export interface ValidationResult {
@@ -100,9 +101,9 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
   const cleanB = sanitizeInput(inputB);
 
   // Direct normalized string match (normalizing optional * before parentheses e.g. 2*(4) vs 2(4))
-  const normA = cleanA.replace(/\s+/g, '').replace(/\*\(/g, '(');
-  const normB = cleanB.replace(/\s+/g, '').replace(/\*\(/g, '(');
-  if (normA === normB) {
+  const normA = cleanA.replace(/\s+/g, '').replace(/\*\(/g, '(').replace(/--/g, '-(-');
+  const normB = cleanB.replace(/\s+/g, '').replace(/\*\(/g, '(').replace(/--/g, '-(-');
+  if (normA === normB || normA.replace(/-\(-/g, '+') === normB.replace(/-\(-/g, '+')) {
     return true;
   }
 
@@ -173,8 +174,30 @@ export function isEquivalent(inputA: string, inputB: string): boolean {
 
   // General polynomial expression comparison (only if neither expression has numerical parentheses like 2(4)^2)
   if (!cleanA.includes('=') && !cleanB.includes('=')) {
-    const hasNumParenA = /\(\s*-?\d/.test(cleanA);
-    const hasNumParenB = /\(\s*-?\d/.test(cleanB);
+    // If there are evaluated number brackets, check if evaluating them numerically matches
+    // e.g. 5(9) - -3 vs 5 * 9 - -3
+    try {
+      const parsedA = cleanA.replace(/--/g, '- -').replace(/\)\s*\(/g, ') * (');
+      const parsedB = cleanB.replace(/--/g, '- -').replace(/\)\s*\(/g, ') * (');
+      
+      // We must actively transform bracketed numbers into explicit multiplication for solveArithmetic
+      // e.g. "5(9)" -> "5 * (9)"
+      // And negative signs e.g. "- (3)" -> "-1 * 3" inside solveArithmetic, we just pass prepA
+      const prepA = parsedA.replace(/(\d)\s*\(/g, '$1*(').replace(/\)\s*(\d)/g, ')*$1').replace(/\)\s*\(/g, ')*(');
+      const prepB = parsedB.replace(/(\d)\s*\(/g, '$1*(').replace(/\)\s*(\d)/g, ')*$1').replace(/\)\s*\(/g, ')*(');
+
+      // We use the scientific calculator engine for robust BEDMAS numerical eval here
+      const arithA = evaluateScientific(prepA);
+      const arithB = evaluateScientific(prepB);
+      if (arithA.success && arithB.success && arithA.result === arithB.result) {
+        if (!/[a-zA-Z]/.test(cleanA) && !/[a-zA-Z]/.test(cleanB)) {
+           return true;
+        }
+      }
+    } catch {}
+
+    const hasNumParenA = /\(\s*-?\d/.test(cleanA) || /\)\s*-?\d/.test(cleanA) || /\d\s*\(/.test(cleanA);
+    const hasNumParenB = /\(\s*-?\d/.test(cleanB) || /\)\s*-?\d/.test(cleanB) || /\d\s*\(/.test(cleanB);
 
     if (!hasNumParenA && !hasNumParenB) {
       try {
