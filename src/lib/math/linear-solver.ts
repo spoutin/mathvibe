@@ -52,7 +52,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Clear Fractions (Multiply by LCD = ${lcd})`,
         expression: eqDisplay,
         action: `Multiplied every term on both sides by the Lowest Common Denominator (${lcd}) to eliminate fractions`,
-        rule: 'Clearing Denominators: Multiplying both sides by the LCD simplifies the equation to integer coefficients.',
+        rule: 'Clearing Denominators: Fraction buster! Multiply both sides by the common LCD match to turn fractions into whole numbers.',
       });
     }
 
@@ -76,7 +76,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
           title: `Step ${stepCount}: Expand Parentheses`,
           expression: eqDisplay,
           action: 'Applied distributive property to remove parentheses on both sides',
-          rule: 'Distributive Property: Multiply the factor outside brackets by each term inside.',
+          rule: 'Distributive Property: Multiply the number outside the brackets with each term inside.',
         });
       }
     }
@@ -97,7 +97,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Combine Like Terms`,
         expression: `${lhsStr} = ${rhsStr}`,
         action: 'Collected variable terms and numerical constants on each side of the equation',
-        rule: 'Combining Like Terms: Simplify each side independently before moving terms across.',
+        rule: 'Combining Like Terms: Clean up each side by adding or subtracting matching terms before moving across.',
       });
     }
 
@@ -122,7 +122,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Isolate Variable on One Side`,
         expression: `${lhsStr} = ${rhsStr}`,
         action: actionText,
-        rule: 'Inverse Operations: Use addition or subtraction to collect all variable terms on one side.',
+        rule: 'Inverse Operations: Think of a balance scale! Do the opposite operation to move all variable terms to one side.',
       });
     }
 
@@ -147,7 +147,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Isolate Constant Terms`,
         expression: `${lhsStr} = ${rhsStr}`,
         action: actionText,
-        rule: 'Inverse Operations: Move constant numbers to the opposite side of the variable.',
+        rule: 'Inverse Operations: Move the plain numbers to the other side by doing the opposite operation.',
       });
     }
 
@@ -207,7 +207,7 @@ export function solveLinearEquation(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Solve for x (Divide by Coefficient)`,
         expression: finalAnswer,
         action: `Divided both sides by ${divisor.toString()} to isolate x: x = ${rhsPoly.constant.toString()} / ${divisor.toString()} = ${solution.toString()}`,
-        rule: 'Division Property of Equality: Divide both sides by the coefficient of x to find the unknown value.',
+        rule: 'Division Property of Equality: Do the opposite! Divide both sides by the number in front of x to get x completely by itself.',
         isFinal: true,
       });
     } else {

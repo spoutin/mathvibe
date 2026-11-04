@@ -172,7 +172,7 @@ function reduceOneOperation(tokens: Token[]): StepReduction | null {
         }
         const res = left.val.pow(exp);
         const action = `Calculate exponent: ${left.val.toString()}^${right.val.toString()} = ${res.toString()}`;
-        const rule = 'BEDMAS Rule: Exponents are evaluated before multiplication and division.';
+        const rule = 'BEDMAS: Calculate exponents (powers) before multiplying or dividing.';
         tokens.splice(i - 1, 3, { type: 'num', val: res });
         return { title: 'Evaluate Exponent', action, rule };
       }
@@ -189,7 +189,7 @@ function reduceOneOperation(tokens: Token[]): StepReduction | null {
         if (t.op === '*') {
           const res = left.val.mul(right.val);
           const action = `Multiply: ${left.val.toString()} * ${right.val.toString()} = ${res.toString()}`;
-          const rule = 'BEDMAS Rule: Multiplication and division are evaluated in order from left to right.';
+          const rule = 'BEDMAS: Work through multiplication and division in order from left to right.';
           tokens.splice(i - 1, 3, { type: 'num', val: res });
           return { title: 'Multiplication', action, rule };
         } else {
@@ -198,7 +198,7 @@ function reduceOneOperation(tokens: Token[]): StepReduction | null {
           }
           const res = left.val.div(right.val);
           const action = `Divide: ${left.val.toString()} / ${right.val.toString()} = ${res.toString()}`;
-          const rule = 'BEDMAS Rule: Division and multiplication are evaluated in order from left to right.';
+          const rule = 'BEDMAS: Work through division and multiplication in order from left to right.';
           tokens.splice(i - 1, 3, { type: 'num', val: res });
           return { title: 'Division', action, rule };
         }
@@ -215,19 +215,19 @@ function reduceOneOperation(tokens: Token[]): StepReduction | null {
       if (left?.type === 'num' && right?.type === 'num') {
         if (t.op === '+') {
           const res = left.val.add(right.val);
-          let rule = 'BEDMAS Rule: Addition and subtraction are evaluated from left to right.';
+          let rule = 'BEDMAS: Addition and subtraction are worked through from left to right.';
           let action = `Add: ${left.val.toString()} + ${right.val.toString()} = ${res.toString()}`;
           if (left.val.denominator !== 1 || right.val.denominator !== 1) {
-            rule = 'Fraction Addition: Find the lowest common denominator (LCD) before adding numerators.';
+            rule = 'Fraction Addition: Make the bottom numbers match with an LCD before adding the numerators.';
           }
           tokens.splice(i - 1, 3, { type: 'num', val: res });
           return { title: 'Addition', action, rule };
         } else {
           const res = left.val.sub(right.val);
-          let rule = 'BEDMAS Rule: Addition and subtraction are evaluated from left to right.';
+          let rule = 'BEDMAS: Addition and subtraction are worked through from left to right.';
           let action = `Subtract: ${left.val.toString()} - ${right.val.toString()} = ${res.toString()}`;
           if (left.val.denominator !== 1 || right.val.denominator !== 1) {
-            rule = 'Fraction Subtraction: Convert to common denominator before subtracting numerators.';
+            rule = 'Fraction Subtraction: Make the bottom numbers match with an LCD before subtracting the numerators.';
           }
           tokens.splice(i - 1, 3, { type: 'num', val: res });
           return { title: 'Subtraction', action, rule };

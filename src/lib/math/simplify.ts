@@ -73,7 +73,7 @@ export function simplifyExpression(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Distributive Property`,
         expression: currentExpr,
         action: `Distributed multiplier ${multiplier.toString()} into (${innerContent}): ${expandedStr}`,
-        rule: 'Distributive Property: Multiply the term outside the parentheses by each term inside.',
+        rule: 'Distributive Property: The rainbow rule! Multiply the number outside the brackets with each term inside.',
       });
     }
 
@@ -119,7 +119,7 @@ export function simplifyExpression(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Combine Like Terms`,
         expression: currentExpr,
         action: groupingNote,
-        rule: 'Combining Like Terms: Add or subtract the coefficients of terms with the same variable.',
+        rule: 'Combining Like Terms: Collect terms that share the exact same variable letters and powers.',
       });
     }
 

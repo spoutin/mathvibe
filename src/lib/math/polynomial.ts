@@ -298,7 +298,7 @@ export function factorPolynomialGCF(rawInput: string): SolveResult {
     title: `Step ${stepCount}: Find Greatest Common Factor (GCF = ${gcfStr})`,
     expression: `${gcfStr}(${quotientStr})`,
     action: `Determined GCF of terms is ${gcfStr}. Divided each term: ${divisionBreakdown}`,
-    rule: 'Greatest Common Factor: Divide each term in the polynomial by the GCF.',
+    rule: 'Greatest Common Factor: What do they share? Find the biggest number and lowest powers of each letter that go into every term, and divide each term by it.',
   });
 
   // Step 2: Final factored expression
@@ -309,7 +309,7 @@ export function factorPolynomialGCF(rawInput: string): SolveResult {
     title: 'Final Factored Form',
     expression: finalAnswer,
     action: `Factored polynomial: ${finalAnswer}`,
-    rule: 'Common Factoring: Write the GCF outside the parentheses and the quotient terms inside.',
+    rule: 'Common Factoring: Write the GCF out front and the leftover terms inside the brackets.',
     isFinal: true,
   });
 

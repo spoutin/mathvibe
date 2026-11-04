@@ -145,7 +145,7 @@
       {#if showHint}
         <div class="p-3 bg-amber-50/90 border border-amber-200 rounded-xl text-xs text-amber-950 animate-fadeIn">
           <div class="font-bold flex items-center gap-1 text-amber-800 mb-0.5">
-            <span>💡 Pedagogical Hint:</span>
+            <span>💡 Helpful Tutor Hint:</span>
           </div>
           <p class="font-medium leading-relaxed">{step.rule}</p>
         </div>

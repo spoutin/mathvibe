@@ -36,7 +36,7 @@ export function expandPolynomial(rawInput: string): SolveResult {
         title: `Step ${stepCount}: Apply FOIL (Expand Brackets)`,
         expression: intermediateStr,
         action: `Multiplied each term in the first bracket by each term in the second: ${expansionBreakdown.join(' ')}`,
-        rule: 'FOIL Method: Multiply First terms, Outer terms, Inner terms, and Last terms.',
+        rule: 'FOIL Method: FOIL time! Multiply Firsts, Outers, Inners, and Lasts, then gather your like terms.',
       });
 
       const combined = expandedPoly.combineLikeTerms();
@@ -85,7 +85,7 @@ export function expandPolynomial(rawInput: string): SolveResult {
           title: `Step ${stepCount}: Distributive Property`,
           expression: finalAnswer,
           action: `Multiplied ${mono.format(true)} into (${monoMatch[2]}): ${finalAnswer}`,
-          rule: 'Distributive Property: Multiply the monomial outside by each term inside the bracket.',
+          rule: 'Distributive Property: Rainbow rule! Multiply the monomial out front with each term inside the bracket.',
           isFinal: true,
         });
 
@@ -141,7 +141,7 @@ export function factorTrinomial(rawInput: string): SolveResult {
             title: `Step ${stepCount}: Identify Difference of Squares`,
             expression: `(x)^2 - (${root})^2`,
             action: `Recognized expression as a^2 - b^2 with a = x and b = ${root}`,
-            rule: 'Difference of Squares: a^2 - b^2 factors into (a - b)(a + b).',
+            rule: 'Difference of Squares: Two squared items subtracted (a^2 - b^2) always split into (a - b)(a + b).',
           });
 
           const finalAnswer = `(x - ${root})(x + ${root})`;
@@ -200,7 +200,7 @@ export function factorTrinomial(rawInput: string): SolveResult {
             title: `Step ${stepCount}: Product and Sum Method`,
             expression: `Product = ${c}, Sum = ${b}`,
             action: `Found integers ${foundP} and ${foundQ} because (${foundP}) * (${foundQ}) = ${c} and (${foundP}) + (${foundQ}) = ${b}`,
-            rule: 'Product & Sum Method: Find two numbers that multiply to c and add to b.',
+            rule: 'Product & Sum Method: Number riddle! Find two numbers that multiply to the end number and add up to the middle number.',
           });
 
           const formatFactor = (num: number): string => (num >= 0 ? `(x + ${num})` : `(x - ${Math.abs(num)})`);
