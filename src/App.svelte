@@ -8,47 +8,57 @@
   let formula = $state('3x + 7 = 22');
   let result = $state<SolveResult | null>(null);
   let showKeypad = $state(false);
-  let showPresets = $state(true);
   let inputRef = $state<HTMLInputElement | null>(null);
+  let activeStepInput = $state('');
 
   function executeSolve() {
     if (!formula.trim()) return;
+    activeStepInput = '';
     result = solveGrade9Math(formula);
   }
 
   function handleKeypadInsert(char: string) {
-    formula += char;
-    if (inputRef) {
-      inputRef.focus();
+    if (result && result.success) {
+      activeStepInput += char;
+    } else {
+      formula += char;
+      if (inputRef) inputRef.focus();
     }
   }
 
   function handleKeypadClear() {
-    formula = '';
-    result = null;
-    if (inputRef) {
-      inputRef.focus();
+    if (result && result.success) {
+      activeStepInput = '';
+    } else {
+      formula = '';
+      result = null;
+      if (inputRef) inputRef.focus();
     }
   }
 
   function handleKeypadBackspace() {
-    if (formula.length > 0) {
-      formula = formula.slice(0, -1);
-    }
-    if (inputRef) {
-      inputRef.focus();
+    if (result && result.success) {
+      if (activeStepInput.length > 0) {
+        activeStepInput = activeStepInput.slice(0, -1);
+      }
+    } else {
+      if (formula.length > 0) {
+        formula = formula.slice(0, -1);
+      }
+      if (inputRef) inputRef.focus();
     }
   }
 
   function handlePresetSelect(presetFormula: string) {
     formula = presetFormula;
+    activeStepInput = '';
     executeSolve();
-    // Scroll smoothly to solver
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleReset() {
     result = null;
+    activeStepInput = '';
     if (inputRef) {
       inputRef.focus();
     }
@@ -73,16 +83,16 @@
           <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 leading-tight flex items-center gap-1.5">
             Grade 9 Math Quest
             <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-bold border border-indigo-200">
-              Svelte 5
+              Interactive Practice
             </span>
           </h1>
-          <p class="text-xs text-slate-500 font-medium">Interactive Step-by-Step Math Explorer</p>
+          <p class="text-xs text-slate-500 font-medium">Step-by-Step Solver &amp; Self-Validation</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-amber-100/90 text-amber-800 border border-amber-300 shadow-sm">
-          <span>🔥</span> BEDMAS &amp; Algebra
+        <span class="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-sm">
+          <span>✍️</span> Student-Solved Mode
         </span>
       </div>
     </div>
@@ -135,7 +145,7 @@
           onclick={executeSolve}
           class="btn-3d h-14 px-7 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-base rounded-2xl border-b-4 border-indigo-900 shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer"
         >
-          <span>Execute</span>
+          <span>Start Practice</span>
           <span>🚀</span>
         </button>
       </div>
@@ -173,6 +183,8 @@
           <StepPlayer
             {result}
             onReset={handleReset}
+            externalInput={activeStepInput}
+            onInputUpdate={(val) => (activeStepInput = val)}
           />
         {/key}
       </section>
@@ -180,39 +192,39 @@
       <!-- Empty Welcome / Intro State -->
       <section class="bg-white/70 border-2 border-slate-200/90 rounded-3xl p-6 sm:p-8 text-center shadow-sm space-y-5">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-indigo-50 text-3xl border border-indigo-200 mb-1">
-          📐
+          ✍️
         </div>
         <div class="max-w-md mx-auto space-y-2">
           <h2 class="text-xl sm:text-2xl font-black text-slate-900">
-            Learn Math Step by Step
+            Practice Grade 9 Math Step by Step
           </h2>
           <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            No mystery answers. Enter any Grade 9 problem above and watch each algebraic move unfold with curriculum explanations.
+            Test your skills by typing each intermediate step. The solver validates your answer in real time, alerts you if you skipped ahead, and offers hints when needed.
           </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-left">
-          <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5">
-            <span class="text-xl">1️⃣</span>
-            <h4 class="font-bold text-xs text-amber-950 mt-1 mb-0.5">Step-by-Step Stepper</h4>
-            <p class="text-[11px] text-amber-800">
-              Click "Next Step ▶" to follow along or "Solve All ⏩" to see the end result.
+          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-3.5">
+            <span class="text-xl">✅</span>
+            <h4 class="font-bold text-xs text-indigo-950 mt-1 mb-0.5">Real-Time Validation</h4>
+            <p class="text-[11px] text-indigo-800">
+              Type your next algebraic move and verify it immediately.
             </p>
           </div>
 
-          <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-3.5">
-            <span class="text-xl">💡</span>
-            <h4 class="font-bold text-xs text-indigo-950 mt-1 mb-0.5">Grade 9 Rules</h4>
-            <p class="text-[11px] text-indigo-800">
-              Clear inverse operations, distributive law, and LCD fraction clearing.
+          <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5">
+            <span class="text-xl">⚡</span>
+            <h4 class="font-bold text-xs text-amber-950 mt-1 mb-0.5">Skipped-Step Intelligence</h4>
+            <p class="text-[11px] text-amber-800">
+              Did mental math? It recognizes valid future steps and flags what was jumped.
             </p>
           </div>
 
           <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3.5">
-            <span class="text-xl">🎉</span>
-            <h4 class="font-bold text-xs text-emerald-950 mt-1 mb-0.5">Rewarding &amp; Fun</h4>
+            <span class="text-xl">💡</span>
+            <h4 class="font-bold text-xs text-emerald-950 mt-1 mb-0.5">Scaffolding &amp; Hints</h4>
             <p class="text-[11px] text-emerald-800">
-              Tactile 3D buttons, encouraging feedback, and confetti celebration.
+              Never get stuck with on-demand curriculum hints and step reveals.
             </p>
           </div>
         </div>
