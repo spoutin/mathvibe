@@ -5,6 +5,7 @@
   import Presets from './lib/components/Presets.svelte';
   import StepPlayer from './lib/components/StepPlayer.svelte';
   import ScientificCalculatorModal from './lib/components/ScientificCalculatorModal.svelte';
+  import VariableInputs from './lib/components/VariableInputs.svelte';
 
   let formula = $state('3x + 7 = 22');
   let result = $state<SolveResult | null>(null);
@@ -12,11 +13,25 @@
   let showScientificModal = $state(false);
   let inputRef = $state<HTMLInputElement | null>(null);
   let activeStepInput = $state('');
+  let variableValues = $state<Record<string, string>>({});
+
+  const detectedVariables = $derived.by(() => {
+    const letters = formula.match(/[a-zA-Z]/g) || [];
+    return Array.from(new Set(letters)).sort();
+  });
 
   function executeSolve() {
     if (!formula.trim()) return;
     activeStepInput = '';
-    result = solveGrade9Math(formula);
+    result = solveGrade9Math(formula, variableValues);
+  }
+
+  function handleVariableChange(varName: string, val: string) {
+    variableValues[varName] = val;
+  }
+
+  function handleClearVariables() {
+    variableValues = {};
   }
 
   function handleKeypadInsert(char: string) {
@@ -162,6 +177,16 @@
           <span>🚀</span>
         </button>
       </div>
+
+      <!-- Variable Assignment Chips (when variables detected in formula) -->
+      {#if detectedVariables.length > 0}
+        <VariableInputs
+          variables={detectedVariables}
+          values={variableValues}
+          onChange={handleVariableChange}
+          onClear={handleClearVariables}
+        />
+      {/if}
 
       <!-- Collapsible Keypad -->
       {#if showKeypad}

@@ -3,9 +3,13 @@ import { simplifyExpression } from './simplify.ts';
 import { solveLinearEquation } from './linear-solver.ts';
 import { factorPolynomialGCF, Polynomial } from './polynomial.ts';
 import { expandPolynomial, factorTrinomial } from './factoring.ts';
+import { evaluateSubstitution } from './substitution.ts';
 import type { SolveResult } from '../types.ts';
 
-export function solveGrade9Math(rawInput: string): SolveResult {
+export function solveGrade9Math(
+  rawInput: string,
+  variableValues?: Record<string, string>
+): SolveResult {
   const trimmed = rawInput.trim();
 
   if (!trimmed) {
@@ -17,6 +21,16 @@ export function solveGrade9Math(rawInput: string): SolveResult {
       finalAnswer: '',
       error: 'Please enter a formula or problem to solve.',
     };
+  }
+
+  // Check if variable substitution values are provided
+  if (variableValues) {
+    const hasActiveValues = Object.values(variableValues).some(
+      (v) => v !== undefined && v !== null && v.trim() !== ''
+    );
+    if (hasActiveValues) {
+      return evaluateSubstitution(rawInput, variableValues);
+    }
   }
 
   // Standardize symbols
