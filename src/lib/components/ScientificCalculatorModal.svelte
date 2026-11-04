@@ -90,17 +90,26 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<!-- Modal Backdrop -->
+<!-- Modal Backdrop Overlay -->
 <div
   class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Scientific Calculator"
 >
+  <!-- Background Dismiss Button -->
+  <button
+    type="button"
+    class="fixed inset-0 w-full h-full cursor-default -z-10 bg-transparent border-0"
+    onclick={onClose}
+    aria-label="Close modal"
+    tabindex="-1"
+  ></button>
+
   <!-- Modal Content Container -->
   <div
-    class="bg-white border-2 border-slate-300 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto"
-    onclick={(e) => e.stopPropagation()}
+    class="bg-white border-2 border-slate-300 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto relative z-10"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Scientific Calculator"
+    tabindex="-1"
   >
     <!-- Modal Header -->
     <div class="px-5 py-3.5 bg-slate-100/90 border-b border-slate-200 flex items-center justify-between">

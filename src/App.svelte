@@ -4,10 +4,12 @@
   import Keypad from './lib/components/Keypad.svelte';
   import Presets from './lib/components/Presets.svelte';
   import StepPlayer from './lib/components/StepPlayer.svelte';
+  import ScientificCalculatorModal from './lib/components/ScientificCalculatorModal.svelte';
 
   let formula = $state('3x + 7 = 22');
   let result = $state<SolveResult | null>(null);
   let showKeypad = $state(false);
+  let showScientificModal = $state(false);
   let inputRef = $state<HTMLInputElement | null>(null);
   let activeStepInput = $state('');
 
@@ -244,4 +246,31 @@
       <span class="text-slate-400">High School Grade 9 Pedagogical Standards</span>
     </div>
   </footer>
+
+  <!-- Floating Scientific Calculator Launch Button (FAB) -->
+  <button
+    type="button"
+    onclick={() => (showScientificModal = true)}
+    class="fixed bottom-6 right-6 z-40 btn-3d px-4 py-3 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-500 hover:to-purple-600 text-white font-black text-xs sm:text-sm rounded-2xl border-b-4 border-indigo-950 shadow-2xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105 active:scale-95"
+    aria-label="Open Scientific Calculator"
+    title="Open Scientific Calculator"
+  >
+    <span class="text-xl">🧮</span>
+    <span>Scientific Calc</span>
+  </button>
+
+  <!-- Scientific Calculator Modal -->
+  {#if showScientificModal}
+    <ScientificCalculatorModal
+      onClose={() => (showScientificModal = false)}
+      onInsert={(calcResult) => {
+        if (result && result.success) {
+          activeStepInput += calcResult;
+        } else {
+          formula += calcResult;
+          if (inputRef) inputRef.focus();
+        }
+      }}
+    />
+  {/if}
 </div>
