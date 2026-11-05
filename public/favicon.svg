@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#7C3AED" />
+    </linearGradient>
+
+    <!-- Lightning / Vibe Glow Gradient -->
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <!-- Math Symbol Gradient -->
+    <linearGradient id="mathGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E0E7FF" />
+    </linearGradient>
+
+    <!-- Soft Drop Shadow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#1E1B4B" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Rounded Squircle Badge -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)" stroke="#818CF8" stroke-width="2" />
+
+  <!-- Inner Subtle Bevel / Glass Highlight -->
+  <rect x="4" y="4" width="56" height="28" rx="14" fill="#FFFFFF" fill-opacity="0.12" />
+
+  <g filter="url(#glow)">
+    <!-- Mathematical Radical (Square Root) & Overbar -->
+    <path
+      d="M11 36 L15 36 L21 48 L28 20 L40 20"
+      fill="none"
+      stroke="url(#mathGrad)"
+      stroke-width="4.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Stylized 'x' Under the Radical -->
+    <path
+      d="M29 32 L37 44 M37 32 L29 44"
+      fill="none"
+      stroke="url(#mathGrad)"
+      stroke-width="3.5"
+      stroke-linecap="round"
+    />
+
+    <!-- Dynamic Energy Lightning Bolt (The "Vibe") -->
+    <polygon
+      points="46,12 36,31 43,31 38,52 54,27 46,27"
+      fill="url(#boltGrad)"
+      stroke="#B45309"
+      stroke-width="1"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>

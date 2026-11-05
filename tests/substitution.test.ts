@@ -67,4 +67,12 @@ describe('Variable Substitution & Evaluation Engine', () => {
       expect(expressions[i]).not.toBe(expressions[i - 1]);
     }
   });
+
+  it('fails with an error message when equation does not balance with assigned variables (e.g. x = 22 for 3x + 7 = 22)', () => {
+    const res = evaluateSubstitution('3x + 7 = 22', { x: '22' });
+    expect(res.success).toBe(false);
+    expect(res.error).toContain('Cannot be solved with x = 22');
+    expect(res.error).toContain('73');
+    expect(res.error).toContain('22');
+  });
 });

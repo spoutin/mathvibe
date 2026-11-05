@@ -50,4 +50,10 @@ describe('Unified Grade 9 Math Engine', () => {
     expect(res.success).toBe(true);
     expect(res.finalAnswer).toBe('x = 5');
   });
+
+  it('errors immediately when assigned variable cannot solve the equation (e.g. 3x + 7 = 22 with x = 22)', () => {
+    const res = solveGrade9Math('3x + 7 = 22', { x: '22' });
+    expect(res.success).toBe(false);
+    expect(res.error).toContain('Cannot be solved with x = 22');
+  });
 });

@@ -183,6 +183,21 @@ function evaluateEquationSubstitution(
     const rhsEval = solveArithmetic(rhsSub);
 
     if (lhsEval.success && rhsEval.success) {
+      const isBalanced = lhsEval.finalAnswer === rhsEval.finalAnswer;
+      if (!isBalanced) {
+        const varList = Object.entries(activeVars)
+          .map(([k, v]) => `${k} = ${v}`)
+          .join(', ');
+        return {
+          success: false,
+          type: 'equation',
+          original: equationStr,
+          steps: [],
+          finalAnswer: '',
+          error: `Cannot be solved with ${varList}: The left side evaluates to ${lhsEval.finalAnswer}, which does not equal the right side (${rhsEval.finalAnswer}). Clear or change ${Object.keys(activeVars).join(', ')} to solve this equation.`,
+        };
+      }
+
       // Append intermediate steps from LHS evaluation (skipping if it already reached the final equality line)
       for (const s of lhsEval.steps) {
         if (!s.isFinal) {
@@ -200,16 +215,13 @@ function evaluateEquationSubstitution(
       }
 
       stepCount++;
-      const isBalanced = lhsEval.finalAnswer === rhsEval.finalAnswer;
       const verifyLine = `${lhsEval.finalAnswer} = ${rhsEval.finalAnswer}`;
 
       steps.push({
         stepNumber: stepCount,
-        title: isBalanced ? 'Equation Balance Verified' : 'Equation Not Balanced',
+        title: 'Equation Balance Verified',
         expression: verifyLine,
-        action: isBalanced
-          ? `Verified: Left Side (${lhsEval.finalAnswer}) equals Right Side (${rhsEval.finalAnswer}). The solution is balanced!`
-          : `Left Side (${lhsEval.finalAnswer}) does not equal Right Side (${rhsEval.finalAnswer}).`,
+        action: `Verified: Left Side (${lhsEval.finalAnswer}) equals Right Side (${rhsEval.finalAnswer}). The solution is balanced!`,
         rule: 'Equation Verification: Check if substituting the variable balances the equation (LS = RS).',
         isFinal: true,
       });
