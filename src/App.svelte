@@ -212,12 +212,13 @@
             id="math-input"
             bind:this={inputRef}
             type="text"
+            disabled={Boolean(result && result.success)}
             bind:value={formula}
             onkeydown={handleKeyDown}
             placeholder="e.g. 3x + 7 = 22, 2(x - 3) = 14, or (12 - 4) * 3"
-            class="w-full h-14 pl-4 pr-10 rounded-2xl bg-slate-50 border-2 border-slate-200 text-slate-900 font-mono font-bold text-lg sm:text-xl focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100 transition-all placeholder:text-slate-400 placeholder:font-normal placeholder:text-sm"
+            class="w-full h-14 pl-4 pr-10 rounded-2xl {result && result.success ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-slate-50 text-slate-900 focus:bg-white'} border-2 border-slate-200 font-mono font-bold text-lg sm:text-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all placeholder:text-slate-400 placeholder:font-normal placeholder:text-sm"
           />
-          {#if formula}
+          {#if formula && !(result && result.success)}
             <button
               type="button"
               onclick={() => { formula = ''; if (inputRef) inputRef.focus(); }}
@@ -229,14 +230,25 @@
           {/if}
         </div>
 
-        <button
-          type="button"
-          onclick={executeSolve}
-          class="btn-3d h-14 px-7 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-base rounded-2xl border-b-4 border-indigo-900 shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-        >
-          <span>Start Practice</span>
-          <span>🚀</span>
-        </button>
+        {#if result && result.success}
+          <button
+            type="button"
+            onclick={handleReset}
+            class="btn-3d h-14 px-6 bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-base rounded-2xl border-b-4 border-slate-950 shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+          >
+            <span>Reset Problem</span>
+            <span>🔄</span>
+          </button>
+        {:else}
+          <button
+            type="button"
+            onclick={executeSolve}
+            class="btn-3d h-14 px-7 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-base rounded-2xl border-b-4 border-indigo-900 shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+          >
+            <span>Start Practice</span>
+            <span>🚀</span>
+          </button>
+        {/if}
       </div>
 
       <!-- Variable Assignment Chips (when variables detected in formula) -->
@@ -244,6 +256,7 @@
         <VariableInputs
           variables={detectedVariables}
           values={variableValues}
+          disabled={Boolean(result && result.success)}
           onChange={handleVariableChange}
           onClear={handleClearVariables}
         />

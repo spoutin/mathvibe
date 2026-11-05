@@ -59,4 +59,12 @@ describe('Variable Substitution & Evaluation Engine', () => {
     expect(res.success).toBe(true);
     expect(res.finalAnswer).toBe('2y + 4');
   });
+
+  it('does not duplicate the final step when evaluating equation verification', () => {
+    const res = evaluateSubstitution('3x + 7 = 22', { x: '5' });
+    const expressions = res.steps.map((s) => s.expression);
+    for (let i = 1; i < expressions.length; i++) {
+      expect(expressions[i]).not.toBe(expressions[i - 1]);
+    }
+  });
 });

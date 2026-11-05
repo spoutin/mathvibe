@@ -183,16 +183,19 @@ function evaluateEquationSubstitution(
     const rhsEval = solveArithmetic(rhsSub);
 
     if (lhsEval.success && rhsEval.success) {
-      // Append intermediate steps from LHS evaluation
+      // Append intermediate steps from LHS evaluation (skipping if it already reached the final equality line)
       for (const s of lhsEval.steps) {
         if (!s.isFinal) {
-          stepCount++;
-          steps.push({
-            ...s,
-            stepNumber: stepCount,
-            expression: `${s.expression} = ${rhsEval.finalAnswer}`,
-            title: `Step ${stepCount}: ${s.title.replace(/^Step \d+:\s*/, '')}`,
-          });
+          const intermediateLine = `${s.expression} = ${rhsEval.finalAnswer}`;
+          if (intermediateLine !== `${lhsEval.finalAnswer} = ${rhsEval.finalAnswer}`) {
+            stepCount++;
+            steps.push({
+              ...s,
+              stepNumber: stepCount,
+              expression: intermediateLine,
+              title: `Step ${stepCount}: ${s.title.replace(/^Step \d+:\s*/, '')}`,
+            });
+          }
         }
       }
 

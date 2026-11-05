@@ -28,6 +28,7 @@ export function solveGrade9Math(
   const sanitized = trimmed
     .replace(/[×·]/g, '*')
     .replace(/÷/g, '/')
+    .replace(/==+/g, '=')
     .trim();
 
   // Purely numerical arithmetic (BEDMAS) -> no letters at all

@@ -44,4 +44,10 @@ describe('Unified Grade 9 Math Engine', () => {
     expect(r2.success).toBe(true);
     expect(r2.finalAnswer).toBe('8n');
   });
+
+  it('normalizes double equals (==) to single equals (=)', () => {
+    const res = solveGrade9Math('3x + 7 == 22');
+    expect(res.success).toBe(true);
+    expect(res.finalAnswer).toBe('x = 5');
+  });
 });

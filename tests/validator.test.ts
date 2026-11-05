@@ -89,4 +89,11 @@ describe('Mathematical Step Equivalence & Validator', () => {
     expect(validateStep('x = 2/4', 0, steps).status).toBe('correct');
     expect(validateStep('2/4 = x', 0, steps).status).toBe('correct');
   });
+
+  it('accepts double equals (==) as single equals (=) in student step input', () => {
+    const steps: MathStep[] = [
+      { stepNumber: 1, title: 'Step 1', expression: '3(5) + 7 = 22', action: '', rule: '' },
+    ];
+    expect(validateStep('3(5) + 7 == 22', 0, steps).status).toBe('correct');
+  });
 });

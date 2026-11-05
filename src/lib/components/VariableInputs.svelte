@@ -2,11 +2,13 @@
   let {
     variables,
     values,
+    disabled = false,
     onChange,
     onClear,
   }: {
     variables: string[];
     values: Record<string, string>;
+    disabled?: boolean;
     onChange: (varName: string, val: string) => void;
     onClear: () => void;
   } = $props();
@@ -24,13 +26,18 @@
         <h4 class="font-extrabold text-xs text-indigo-950 uppercase tracking-wider">
           Assign Variable Values <span class="text-indigo-600 font-semibold normal-case">(Optional for Evaluation)</span>
         </h4>
+        {#if disabled}
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 border border-slate-300">
+            🔒 Locked during practice
+          </span>
+        {/if}
       </div>
 
-      {#if hasAnyValues}
+      {#if hasAnyValues && !disabled}
         <button
           type="button"
           onclick={onClear}
-          class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-lg transition active:translate-y-0.5"
+          class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-lg transition active:translate-y-0.5 cursor-pointer"
         >
           Reset Values ✕
         </button>
@@ -39,16 +46,17 @@
 
     <div class="flex flex-wrap items-center gap-2">
       {#each variables as varName}
-        <div class="inline-flex items-center bg-white border-2 border-indigo-200 rounded-xl px-2.5 py-1.5 shadow-sm focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-100 transition">
-          <span class="font-mono font-black text-sm text-indigo-700 mr-1.5 select-none">
+        <div class="inline-flex items-center {disabled ? 'bg-slate-100 border-slate-300' : 'bg-white border-indigo-200 focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-100'} border-2 rounded-xl px-2.5 py-1.5 shadow-sm transition">
+          <span class="font-mono font-black text-sm {disabled ? 'text-slate-500' : 'text-indigo-700'} mr-1.5 select-none">
             {varName} =
           </span>
           <input
             type="text"
+            disabled={disabled}
             value={values[varName] || ''}
             oninput={(e) => onChange(varName, (e.target as HTMLInputElement).value)}
             placeholder="e.g. 5 or -2"
-            class="w-20 sm:w-24 text-sm font-mono font-bold text-slate-800 bg-transparent focus:outline-none placeholder:text-slate-400 placeholder:font-normal placeholder:text-xs"
+            class="w-20 sm:w-24 text-sm font-mono font-bold {disabled ? 'text-slate-500 cursor-not-allowed' : 'text-slate-800'} bg-transparent focus:outline-none placeholder:text-slate-400 placeholder:font-normal placeholder:text-xs"
           />
         </div>
       {/each}
